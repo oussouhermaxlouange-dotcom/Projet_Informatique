@@ -1,0 +1,54 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam defaultFontSize 14
+skinparam ArrowFontSize 12
+skinparam nodesep 24
+skinparam linetype ortho
+skinparam ranksep 46
+skinparam packageStyle rectangle
+left to right direction
+
+together {
+  actor "Étudiant" as E
+  actor "Responsable" as R
+  actor "Admin" as A
+  actor "Développeur" as D
+}
+
+rectangle "Plateforme de suivi des conventions\nde stage et des soutenances" {
+  usecase "Gérer son compte" as UC1
+  usecase "Soumettre une demande" as UC2
+  usecase "Consulter une demande" as UC3
+  usecase "Gérer une demande" as UC4
+  usecase "Confirmer une demande" as UC5
+  usecase "Refuser une demande" as UC6
+  usecase "Programmer une soutenance" as UC7
+  usecase "Gérer les comptes" as UC8
+  usecase "Se connecter" as UC9
+}
+
+E --> UC1
+E --> UC2
+E --> UC3
+R --> UC4
+R --> UC7
+A --> UC8
+A --> UC7
+D --> UC8
+
+UC1 ..> UC9 : <<include>>
+UC2 ..> UC9 : <<include>>
+UC3 ..> UC9 : <<include>>
+UC4 ..> UC9 : <<include>>
+UC7 ..> UC9 : <<include>>
+UC8 ..> UC9 : <<include>>
+
+UC5 ..> UC4 : <<extend>>
+UC6 ..> UC4 : <<extend>>
+
+legend bottom
+  Toute action suppose une session authentifiée (EF-01).
+endlegend
+@enduml

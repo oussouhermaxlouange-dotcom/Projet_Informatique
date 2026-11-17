@@ -1,0 +1,84 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName SansSerif
+skinparam nodesep 25
+skinparam linetype ortho
+skinparam ranksep 45
+hide circle
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+
+class Utilisateur {
+  id : INT <<PK>>
+  email : VARCHAR(100) <<UNIQUE>>
+  mot_de_passe_hash : VARCHAR(255)
+  role : ENUM
+  nom : VARCHAR(60)
+  prenom : VARCHAR(60)
+  actif : BOOLEAN
+}
+class Etudiant {
+  id : INT <<PK>>
+  numero_etudiant : VARCHAR(20) <<UNIQUE>>
+  filiere : VARCHAR(60)
+}
+class Encadreur {
+  id : INT <<PK>>
+  grade : VARCHAR(60)
+  specialite : VARCHAR(80)
+}
+class Entreprise {
+  id : INT <<PK>>
+  nom : VARCHAR(80)
+  ville : VARCHAR(60)
+  contact : VARCHAR(100)
+}
+class Salle {
+  id : INT <<PK>>
+  nom : VARCHAR(30) <<UNIQUE>>
+  capacite : SMALLINT
+  batiment : VARCHAR(40)
+}
+class Convention {
+  id : INT <<PK>>
+  intitule : VARCHAR(120)
+  statut : ENUM
+  motif_refus : VARCHAR(255)
+  date_depot : DATETIME
+  date_decision : DATETIME
+  date_debut : DATE
+  date_fin : DATE
+}
+class Disponibilite {
+  id : INT <<PK>>
+  date_debut : DATETIME
+  date_fin : DATETIME
+}
+class Soutenance {
+  id : INT <<PK>>
+  date_heure : DATETIME
+  duree_min : SMALLINT
+  statut : ENUM
+  date_creation : DATETIME
+}
+class Historique {
+  id : INT <<PK>>
+  ancien_statut : ENUM
+  nouveau_statut : ENUM
+  motif : VARCHAR(255)
+  date_evenement : DATETIME
+}
+
+Utilisateur "1" -- "0..1" Etudiant : possède
+Utilisateur "1" -- "0..1" Encadreur : possède
+Etudiant "1" -- "0..*" Convention : dépose
+Entreprise "1" -- "0..*" Convention : accueille
+Encadreur "0..1" -- "0..*" Convention : encadre
+Encadreur "1" -- "0..*" Disponibilite : déclare
+Convention "1" -- "0..1" Soutenance : donne lieu à
+Salle "1" -- "0..*" Soutenance : accueille
+Encadreur "1" -- "0..*" Soutenance : accompagne
+Convention "1" -- "0..*" Historique : journalise
+Utilisateur "1" -- "0..*" Historique : signe
+@enduml

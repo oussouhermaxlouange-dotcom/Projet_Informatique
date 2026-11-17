@@ -1,0 +1,66 @@
++---------------+--------+
+| table_        | lignes |
++---------------+--------+
+| utilisateur   |      8 |
+| etudiant      |      3 |
+| encadreur     |      2 |
+| entreprise    |      2 |
+| salle         |      3 |
+| convention    |      6 |
+| disponibilite |      4 |
+| soutenance    |      2 |
+| historique    |      9 |
++---------------+--------+
++-----------+-------------+
+| statut    | conventions |
++-----------+-------------+
+| BROUILLON |           1 |
+| SOUMISE   |           1 |
+| VALIDEE   |           3 |
+| REFUSEE   |           1 |
++-----------+-------------+
++-------------------------------------+
+| conventions_validees_sans_encadreur |
++-------------------------------------+
+|                                   1 |
++-------------------------------------+
++---------------+-----------------+-----------+-----------------+---------------------+
+| convention_id | etudiant        | statut    | encadreur       | date_decision       |
++---------------+-----------------+-----------+-----------------+---------------------+
+|             1 | Sènami HOUNGBO  | BROUILLON | —               | NULL                |
+|             2 | Ibrahim SANNI   | SOUMISE   | —               | NULL                |
+|             3 | Grâce AMEGAN    | VALIDEE   | Sylvain KIKI    | 2026-10-22 16:00:00 |
+|             4 | Sènami HOUNGBO  | VALIDEE   | Mireille ZINSOU | 2026-10-25 11:30:00 |
+|             5 | Ibrahim SANNI   | REFUSEE   | —               | 2026-10-12 15:10:00 |
+|             6 | Grâce AMEGAN    | VALIDEE   | —               | 2026-10-28 09:00:00 |
++---------------+-----------------+-----------+-----------------+---------------------+
++----+------------------+-------+-------+-----------------+-------------------------+-----------------+
+| id | creneau          | duree | salle | etudiant        | entreprise              | encadreur       |
++----+------------------+-------+-------+-----------------+-------------------------+-----------------+
+|  1 | 15/06/2027 09:00 |    45 | A-101 | Grâce AMEGAN    | Studio Kora             | Sylvain KIKI    |
+|  2 | 15/06/2027 11:00 |    45 | B-204 | Sènami HOUNGBO  | Données et Territoires  | Mireille ZINSOU |
++----+------------------+-------+-------+-----------------+-------------------------+-----------------+
++---------------+---------------------+---------------------+-------------+----------+
+| convention_id | date_decision       | date_publication    | delai_jours | cible_5j |
++---------------+---------------------+---------------------+-------------+----------+
+|             3 | 2026-10-22 16:00:00 | 2026-10-26 10:00:00 |           4 | OUI      |
+|             4 | 2026-10-25 11:30:00 | 2026-10-30 09:30:00 |           5 | OUI      |
++---------------+---------------------+---------------------+-------------+----------+
++-----------------------------+
+| conflits_salle_ou_encadreur |
++-----------------------------+
+|                           0 |
++-----------------------------+
++----+---------------+---------------+----------------+------------------------------+
+| id | convention_id | ancien_statut | nouveau_statut | auteur                       |
++----+---------------+---------------+----------------+------------------------------+
+|  1 |             2 | NULL          | SOUMISE        | ibrahim.sanni@univ.test      |
+|  2 |             3 | NULL          | SOUMISE        | grace.amegan@univ.test       |
+|  3 |             3 | SOUMISE       | VALIDEE        | responsable.pedago@univ.test |
+|  4 |             4 | NULL          | SOUMISE        | sena.houngbo@univ.test       |
+|  5 |             4 | SOUMISE       | VALIDEE        | responsable.pedago@univ.test |
+|  6 |             5 | NULL          | SOUMISE        | ibrahim.sanni@univ.test      |
+|  7 |             5 | SOUMISE       | REFUSEE        | responsable.pedago@univ.test |
+|  8 |             6 | NULL          | SOUMISE        | grace.amegan@univ.test       |
+|  9 |             6 | SOUMISE       | VALIDEE        | responsable.pedago@univ.test |
++----+---------------+---------------+----------------+------------------------------+
