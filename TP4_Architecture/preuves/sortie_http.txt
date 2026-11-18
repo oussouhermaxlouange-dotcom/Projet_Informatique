@@ -1,0 +1,35 @@
+Test HTTP — base http://127.0.0.1:8000
+------------------------------
+
+> GET /api/sante
+HTTP/1.1 200 OK
+Host: 127.0.0.1:8000
+Date: Wed, 18 Nov 2026 13:27:52 GMT
+Connection: close
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+
+{"statut":"ok","base":"ok","horodatage":"2026-11-18T13:27:52+00:00"}
+
+> GET /api/inconnue
+HTTP/1.1 404 Not Found
+Host: 127.0.0.1:8000
+Date: Wed, 18 Nov 2026 13:27:52 GMT
+Connection: close
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+
+{"erreur":{"code":"ROUTE_INCONNUE","message":"Route inconnue."}}
+
+> POST /api/sante
+HTTP/1.1 405 Method Not Allowed
+Host: 127.0.0.1:8000
+Date: Wed, 18 Nov 2026 13:27:52 GMT
+Connection: close
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+
+{"erreur":{"code":"METHODE_NON_AUTORISEE","message":"Méthode HTTP non autorisée pour cette route."}}

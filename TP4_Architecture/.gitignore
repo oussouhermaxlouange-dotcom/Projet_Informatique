@@ -1,0 +1,11 @@
+# Secrets et configuration locale
+.env
+
+# Dépendances éventuelles
+/vendor/
+
+# Journaux et fichiers de travail
+*.log
+.DS_Store
+.idea/
+.vscode/

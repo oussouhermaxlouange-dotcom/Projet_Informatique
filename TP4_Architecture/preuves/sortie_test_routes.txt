@@ -1,0 +1,10 @@
+Test du routeur
+---------------
+GET    /api/sante                       -> 200  OK  (santé)
+GET    /api/inconnue                    -> 404  OK  (route inconnue)
+POST   /api/sante                       -> 405  OK  (méthode non autorisée)
+POST   /api/demandes                    -> 401  OK  (création sans session)
+PATCH  /api/demandes/7/statut           -> 401  OK  (décision sans session)
+GET    /api/demandes                    -> 401  OK  (liste sans session)
+GET    /api/moi                         -> 401  OK  (profil sans session)
+OK  tous les cas sont conformes

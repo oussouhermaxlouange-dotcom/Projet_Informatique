@@ -1,0 +1,20 @@
+Test du domaine (sans HTTP)
+---------------------------
+compte de démonstration trouvé                               OK
+mot de passe Demo1234! vérifié par password_verify           OK
+empreinte différente du mot de passe en clair                 OK
+BROUILLON -> SOUMISE autorisé                                 OK
+SOUMISE -> VALIDEE autorisé                                   OK
+SOUMISE -> REFUSEE autorisé                                   OK
+VALIDEE -> REFUSEE interdit                                    OK
+BROUILLON -> VALIDEE interdit                                  OK
+statut inconnu sans transition                                 OK
+findById retourne la demande 3                                 OK
+findById expose le statut et l’entreprise                    OK
+findByStudent(1) retourne uniquement ses demandes              OK
+findById(999999) retourne null                                 OK
+rollback : statut et motif inchangés après échec            OK
+REFUSEE -> VALIDEE renvoie 409                                 OK
+refus sans motif renvoie 422                                   OK
+étudiant qui décide renvoie 403                              OK
+OK  toutes les vérifications passent

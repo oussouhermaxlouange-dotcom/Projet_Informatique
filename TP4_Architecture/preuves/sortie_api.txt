@@ -1,0 +1,40 @@
+TP6 — preuves HTTP de l'API des demandes
+Base : http://127.0.0.1:8000
+Date : 2026-11-18T13:27:47Z
+---------------------------------------
+
+[Préparation]
+Session anonyme avant connexion                      GET    /api/moi                     -> 401 (attendu 401)  OK
+    {"erreur":{"code":"NON_AUTHENTIFIE","message":"Authentification requise."}}
+Connexion étudiante                                 POST   /api/connexion               -> 200 (attendu 200)  OK
+    {"utilisateur":{"id":1,"email":"sena.houngbo@univ.test","role":"ETUDIANT","nom":"HOUNGBO","prenom":"Sènami","etudiant_id":1,"encadreur_id":null}}
+    identifiant de session régénéré à la connexion : OK
+Dépôt d'une demande (SOUMISE)                      POST   /api/demandes                -> 201 (attendu 201)  OK
+    {"demande":{"id":7,"etudiant_id":1,"entreprise_id":1,"encadreur_id":null,"intitule":"Suivi des tournées de collecte","statut":"SOUMISE","motif_refus":null,"date_depot":"2026-11-18 13:27:47","date_decision":null,"date_debut":"2027-02-01","date_fin":"2027-05-31","etudiant_utilisateur_id":1,"etudiant":"Sènami HOUNGBO","entreprise":"Studio Kora"}}
+Connexion responsable pédagogique                   POST   /api/connexion               -> 200 (attendu 200)  OK
+    {"utilisateur":{"id":6,"email":"responsable.pedago@univ.test","role":"RESPONSABLE","nom":"ADJAHO","prenom":"Pascal","etudiant_id":null,"encadreur_id":null}}
+
+[Six cas demandés]
+Cas 1 — succès : validation de la demande 7       PATCH  /api/demandes/7/statut       -> 200 (attendu 200)  OK
+    {"demande":{"id":7,"etudiant_id":1,"entreprise_id":1,"encadreur_id":null,"intitule":"Suivi des tournées de collecte","statut":"VALIDEE","motif_refus":null,"date_depot":"2026-11-18 13:27:47","date_decision":"2026-11-18 13:27:47","date_debut":"2027-02-01","date_fin":"2027-05-31","etudiant_utilisateur_id":1,"etudiant":"Sènami HOUNGBO","entreprise":"Studio Kora"}}
+Cas 1 (suite) — persistance en base                GET    /api/demandes/7              -> 200 (attendu 200)  OK
+    {"demande":{"id":7,"etudiant_id":1,"entreprise_id":1,"encadreur_id":null,"intitule":"Suivi des tournées de collecte","statut":"VALIDEE","motif_refus":null,"date_depot":"2026-11-18 13:27:47","date_decision":"2026-11-18 13:27:47","date_debut":"2027-02-01","date_fin":"2027-05-31","etudiant_utilisateur_id":1,"etudiant":"Sènami HOUNGBO","entreprise":"Studio Kora"}}
+Cas 2 — 400 : corps JSON illisible                 POST   /api/demandes                -> 400 (attendu 400)  OK
+    {"erreur":{"code":"JSON_INVALIDE","message":"Le corps de la requête doit être un objet JSON valide."}}
+Cas 3 — 401 : aucune session                       POST   /api/demandes                -> 401 (attendu 401)  OK
+    {"erreur":{"code":"NON_AUTHENTIFIE","message":"Authentification requise."}}
+Cas 4 — 403 : étudiant qui décide                PATCH  /api/demandes/2/statut       -> 403 (attendu 403)  OK
+    {"erreur":{"code":"ROLE_NON_AUTORISE","message":"Seul le responsable pédagogique peut décider d’une demande."}}
+Cas 5 — 404 : demande inconnue                     PATCH  /api/demandes/999999/statut  -> 404 (attendu 404)  OK
+    {"erreur":{"code":"DEMANDE_INCONNUE","message":"Demande inconnue."}}
+Cas 6 — 409 : demande déjà validée              PATCH  /api/demandes/4/statut       -> 409 (attendu 409)  OK
+    {"erreur":{"code":"TRANSITION_INTERDITE","message":"Transition VALIDEE vers REFUSEE interdite.","details":{"statut_actuel":"VALIDEE","statut_demande":"REFUSEE","transitions_possibles":[]}}}
+
+[Contrôles complémentaires]
+422 : champs absents ou incohérents                 POST   /api/demandes                -> 422 (attendu 422)  OK
+    {"erreur":{"code":"VALIDATION","message":"Données invalides.","details":{"entreprise_id":"Entreprise inconnue.","intitule":"Intitulé de 5 à 120 caractères obligatoire.","date_debut":"Date de début au format AAAA-MM-JJ.","date_fin":"Date de fin au format AAAA-MM-JJ."}}}
+401 : mot de passe incorrect                         POST   /api/connexion               -> 401 (attendu 401)  OK
+    {"erreur":{"code":"IDENTIFIANTS_INVALIDES","message":"E-mail ou mot de passe incorrect."}}
+
+---------------------------------------
+Bilan : 14/14 réponses conformes.

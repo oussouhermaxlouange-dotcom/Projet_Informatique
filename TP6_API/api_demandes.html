@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>TP6 — API des demandes de stage</title>
+<style>
+  @page { size: A4; margin: 16mm 16mm 14mm 16mm; }
+  body { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8.9pt; line-height: 1.28; color: #000; margin: 0; }
+  .tete { text-align: center; margin-bottom: 7pt; }
+  .tete .petit, .tete .date, .tete .groupe { font-size: 7.9pt; }
+  .tete h1 { font-size: 13.5pt; margin: 2pt 0; }
+  h2 { font-size: 10pt; margin: 10pt 0 3pt; page-break-after: avoid; }
+  p { margin: 0 0 4pt; text-align: justify; }
+  .note { font-size: 7.4pt; font-style: italic; color: #333; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 7.5pt; margin: 1pt 0 4pt; }
+  th, td { border: 0.4pt solid #666; padding: 2pt 3pt; vertical-align: top; text-align: left;
+           word-wrap: break-word; overflow-wrap: break-word; }
+  th { font-weight: bold; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  td.json { font-family: "Liberation Mono", monospace; font-size: 6.5pt; line-height: 1.2;
+            word-break: normal; overflow-wrap: break-word; }
+  footer { margin-top: 8pt; font-size: 7.2pt; color: #444; text-align: center; }
+</style></head><body>
+<div class="tete">
+  <div class="petit">Projet informatique 2 — L3 SIL</div>
+  <h1>API des demandes de stage</h1>
+  <div class="date">TP6 — 18 novembre 2026</div>
+  <div class="groupe">Groupe : OUSSOU Hermax – TCHEGNON Loïk – KANHONOU Ashley<br>
+  Encadreur : MAMA Tairou · Dépôt Git : local (commits TP1 à TP3)</div>
+</div>
+
+<h2>1. Objet</h2>
+<p>Implémentation de la création, de la lecture et de la validation d'une demande, avec
+contrôles côté serveur. Sur 14 cas exécutés contre MySQL 8.0.46 et l'API réelle,
+14 sont conformes à l'attendu écrit avant le test. La base
+<code>tp3_conventions</code> est rechargée depuis le jeu d'essai TP3 avant chaque exécution.</p>
+
+<h2>2. Routes implémentées</h2>
+<table>
+  <colgroup><col style="width:9%"><col style="width:29%"><col style="width:20%"><col style="width:9%"><col style="width:33%"></colgroup>
+  <thead><tr><th>Méthode</th><th>Chemin</th><th>Rôle</th><th>Succès</th><th>Erreurs</th></tr></thead>
+  <tbody>
+    <tr><td>GET</td><td>/api/sante</td><td>Public</td><td>200</td><td>503</td></tr>
+    <tr><td>POST</td><td>/api/connexion</td><td>Public</td><td>200</td><td>400, 401, 403, 422</td></tr>
+    <tr><td>POST</td><td>/api/deconnexion</td><td>Session</td><td>200</td><td>401</td></tr>
+    <tr><td>GET</td><td>/api/moi</td><td>Session</td><td>200</td><td>401</td></tr>
+    <tr><td>GET</td><td>/api/demandes</td><td>Session (selon rôle)</td><td>200</td><td>401, 403</td></tr>
+    <tr><td>GET</td><td>/api/demandes/{id}</td><td>Session (selon rôle)</td><td>200</td><td>401, 403, 404</td></tr>
+    <tr><td>POST</td><td>/api/demandes</td><td>Étudiant</td><td>201</td><td>400, 401, 403, 422</td></tr>
+    <tr><td>PATCH</td><td>/api/demandes/{id}/statut</td><td>Responsable</td><td>200</td><td>400, 401, 403, 404, 409, 422</td></tr>
+  </tbody>
+</table>
+<p class="note">Le contrat complet (corps, champs, codes d'erreur) est dans
+<code>TP4_Architecture/docs/contrat_api.md</code>. Les routes de consultation
+<code>/api/moi</code> et <code>/api/demandes/{id}</code> complètent le contrat du TP4.</p>
+
+<h2>3. Transitions autorisées</h2>
+<table>
+  <colgroup><col style="width:38%"><col style="width:20%"><col style="width:42%"></colgroup>
+  <thead><tr><th>Transition</th><th>Qui</th><th>Règle</th></tr></thead>
+  <tbody>
+    <tr><td>BROUILLON vers SOUMISE</td><td>Étudiant</td><td>Soumission de la demande</td></tr>
+    <tr><td>SOUMISE vers VALIDEE</td><td>Responsable</td><td>Décision favorable</td></tr>
+    <tr><td>SOUMISE vers REFUSEE</td><td>Responsable</td><td>Motif obligatoire (422 sinon)</td></tr>
+  </tbody>
+</table>
+<p class="note">Table des transitions : <code>src/Services/DemandeService.php</code>.
+VALIDEE et REFUSEE sont terminales : toute autre transition est refusée avec 409.</p>
+
+<h2>4. Cas testés (les six cas exigés, sorties réelles)</h2>
+<table>
+  <colgroup><col style="width:5%"><col style="width:31%"><col style="width:8%"><col style="width:8%"><col style="width:48%"></colgroup>
+  <thead><tr><th>N°</th><th>Cas</th><th>Attendu</th><th>Obtenu</th><th>Réponse de l'API (extrait)</th></tr></thead>
+  <tbody>
+<tr><td>S5</td><td>Succès : le responsable valide la demande 7 (SOUMISE vers VALIDEE)</td><td>200</td><td>200</td><td class="json">{&quot;demande&quot;: {&quot;id&quot;: 7, &quot;statut&quot;: &quot;VALIDEE&quot;, &quot;date_decision&quot;: &quot;2026-11-18 15:09:56&quot;}}</td></tr>
+<tr><td>S6</td><td>Erreur 400 : corps JSON illisible</td><td>400</td><td>400</td><td class="json">{&quot;erreur&quot;: {&quot;code&quot;: &quot;JSON_INVALIDE&quot;, &quot;message&quot;: &quot;Le corps de la requête doit être un objet JSON valide.&quot;}}</td></tr>
+<tr><td>S7</td><td>Erreur 401 : aucune session</td><td>401</td><td>401</td><td class="json">{&quot;erreur&quot;: {&quot;code&quot;: &quot;NON_AUTHENTIFIE&quot;, &quot;message&quot;: &quot;Authentification requise.&quot;}}</td></tr>
+<tr><td>S8</td><td>Erreur 403 : l&#x27;étudiante tente de valider</td><td>403</td><td>403</td><td class="json">{&quot;erreur&quot;: {&quot;code&quot;: &quot;ROLE_NON_AUTORISE&quot;, &quot;message&quot;: &quot;Seul le responsable pédagogique peut décider d’une demande.&quot;}}</td></tr>
+<tr><td>S9</td><td>Erreur 404 : demande inexistante (999)</td><td>404</td><td>404</td><td class="json">{&quot;erreur&quot;: {&quot;code&quot;: &quot;DEMANDE_INCONNUE&quot;, &quot;message&quot;: &quot;Demande inconnue.&quot;}}</td></tr>
+<tr><td>S10</td><td>Erreur 409 : valider une demande déjà validée (demande 4)</td><td>409</td><td>409</td><td class="json">{&quot;erreur&quot;: {&quot;code&quot;: &quot;TRANSITION_INTERDITE&quot;, &quot;message&quot;: &quot;Transition VALIDEE vers REFUSEE interdite.&quot;}}</td></tr>
+  </tbody>
+</table>
+<p class="note">Tous les cas du script sont listés dans <code>preuves/sorties.tsv</code>
+(14 cas, 14 conformes), avec les corps JSON complets. Le script
+<code>tests_api.sh</code> recharge la base avant chaque exécution.</p>
+
+<h2>5. État de la base après les cas</h2>
+<table>
+  <colgroup><col style="width:9%"><col style="width:10%"><col style="width:14%"><col style="width:42%"><col style="width:25%"></colgroup>
+  <thead><tr><th>Demande</th><th>Étudiant</th><th>Statut</th><th>Motif de refus</th><th>Décision</th></tr></thead>
+  <tbody>
+<tr><td>1</td><td>1</td><td>BROUILLON</td><td>—</td><td>—</td></tr>
+<tr><td>2</td><td>2</td><td>REFUSEE</td><td>Convention incomplète</td><td>2026-11-18 15:09:56</td></tr>
+<tr><td>3</td><td>3</td><td>VALIDEE</td><td>—</td><td>2026-10-22 16:00:00</td></tr>
+<tr><td>4</td><td>1</td><td>VALIDEE</td><td>—</td><td>2026-10-25 11:30:00</td></tr>
+<tr><td>5</td><td>2</td><td>REFUSEE</td><td>Période de stage incompatible avec le calendrier de la filière</td><td>2026-10-12 15:10:00</td></tr>
+<tr><td>6</td><td>3</td><td>VALIDEE</td><td>—</td><td>2026-10-28 09:00:00</td></tr>
+<tr><td>7</td><td>1</td><td>VALIDEE</td><td>—</td><td>2026-11-18 15:09:56</td></tr>
+  </tbody>
+</table>
+<p class="note">Lignes dans <code>historique</code> après les cas : 12.
+La demande 7 a été créée puis validée pendant le test ; la demande 2 a été refusée avec motif.</p>
+
+<h2>6. Sécurité et cohérence</h2>
+<table>
+  <colgroup><col style="width:20%"><col style="width:80%"></colgroup>
+  <thead><tr><th>Point</th><th>Mise en œuvre</th></tr></thead>
+  <tbody>
+    <tr><td>Mots de passe</td><td><code>password_verify</code> contre un hash <code>password_hash</code> (bcrypt) ; message identique pour compte inconnu et mot de passe faux.</td></tr>
+    <tr><td>Session</td><td><code>session_regenerate_id(true)</code> à chaque connexion réussie ; cookie HttpOnly, SameSite=Lax ; identifiant inconnu refusé (<code>use_strict_mode</code>).</td></tr>
+    <tr><td>Autorisation</td><td>Rôle contrôlé côté serveur à chaque requête ; un étudiant ne voit et ne traite que ses demandes (403 sinon).</td></tr>
+    <tr><td>SQL</td><td>Requêtes préparées avec paramètres liés, émulation désactivée ; aucun SQL dans les contrôleurs.</td></tr>
+    <tr><td>Transaction</td><td>Statut et historique dans une seule transaction ; rollback complet si une étape échoue (vérifié par un test dédié).</td></tr>
+    <tr><td>Erreurs</td><td>Le détail technique va dans le journal serveur ; le client reçoit un message neutre et un code cohérent (400, 401, 403, 404, 409, 422, 503).</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Justification (preuve de travail)</h2>
+<p>Les six cas exigés ont été écrits avant exécution, puis joués sur une base rechargée.
+Toutes les réponses sont conformes. Le rollback est vérifié séparément par
+<code>tests/test_domain.php</code> : une exception provoquée après l'<code>UPDATE</code>
+laisse le statut et le motif inchangés. Le code de l'API reste dans
+<code>TP4_Architecture/</code> (couches contrôleur, service, dépôt) ; les preuves et le
+script de rejeu sont regroupés dans <code>TP6_API/</code>.</p>
+<p class="note">Reproduire : <code>mysql ... &lt; TP3_Modele_donnees/001_schema.sql</code>
+puis <code>002_seed.sql</code>, puis <code>cd TP6_API &amp;&amp; ./tests_api.sh</code>.</p>
+
+<h2>8. Preuves et reproductibilité</h2>
+<p>Le script <code>tests_api.sh</code> recharge la base, démarre l'API et rejoue les
+14 cas ; les sorties sont écrites dans <code>preuves/sorties.tsv</code> (un cas par
+ligne, corps JSON complets). Le tableau ci-dessous en donne la synthèse.</p>
+<table>
+  <colgroup><col style="width:5%"><col style="width:43%"><col style="width:22%"><col style="width:10%"><col style="width:10%"><col style="width:10%"></colgroup>
+  <thead><tr><th>N°</th><th>Cas</th><th>Requête</th><th>Attendu</th><th>Obtenu</th><th>Conforme</th></tr></thead>
+  <tbody>
+<tr><td>S1</td><td>Connexion du responsable pédagogique</td><td>POST /api/connexion</td><td>200</td><td>200</td><td>OUI</td></tr>
+<tr><td>S2</td><td>Connexion de l&#x27;étudiante Sènami HOUNGBO</td><td>POST /api/connexion</td><td>200</td><td>200</td><td>OUI</td></tr>
+<tr><td>S3</td><td>Connexion avec un mauvais mot de passe</td><td>POST /api/connexion</td><td>401</td><td>401</td><td>OUI</td></tr>
+<tr><td>S4</td><td>Création et soumission d&#x27;une demande par l&#x27;étudiante</td><td>POST /api/demandes</td><td>201</td><td>201</td><td>OUI</td></tr>
+<tr><td>S5</td><td>Succès : le responsable valide la demande 7 (SOUMISE vers VALIDEE)</td><td>PATCH /api/demandes/7/statut</td><td>200</td><td>200</td><td>OUI</td></tr>
+<tr><td>S6</td><td>Erreur 400 : corps JSON illisible</td><td>POST /api/demandes</td><td>400</td><td>400</td><td>OUI</td></tr>
+<tr><td>S7</td><td>Erreur 401 : aucune session</td><td>PATCH /api/demandes/2/statut</td><td>401</td><td>401</td><td>OUI</td></tr>
+<tr><td>S8</td><td>Erreur 403 : l&#x27;étudiante tente de valider</td><td>PATCH /api/demandes/2/statut</td><td>403</td><td>403</td><td>OUI</td></tr>
+<tr><td>S9</td><td>Erreur 404 : demande inexistante (999)</td><td>PATCH /api/demandes/999/statut</td><td>404</td><td>404</td><td>OUI</td></tr>
+<tr><td>S10</td><td>Erreur 409 : valider une demande déjà validée (demande 4)</td><td>PATCH /api/demandes/4/statut</td><td>409</td><td>409</td><td>OUI</td></tr>
+<tr><td>S11</td><td>Refus motivé par le responsable (demande 2)</td><td>PATCH /api/demandes/2/statut</td><td>200</td><td>200</td><td>OUI</td></tr>
+<tr><td>S12</td><td>Liste de toutes les demandes par le responsable</td><td>GET /api/demandes</td><td>200</td><td>200</td><td>OUI</td></tr>
+<tr><td>S13</td><td>Liste des demandes de l&#x27;étudiante (ses dossiers uniquement)</td><td>GET /api/demandes</td><td>200</td><td>200</td><td>OUI</td></tr>
+<tr><td>S14</td><td>Entreprise inconnue à la création</td><td>POST /api/demandes</td><td>422</td><td>422</td><td>OUI</td></tr>
+  </tbody>
+</table>
+<p class="note">Capture réelle de <code>/api/sante</code> dans un navigateur :
+<code>preuves/capture_api.png</code>. Base après les cas :
+<code>preuves/etat_base.tsv</code>.</p>
+
+<footer>Projet informatique 2 — L3 SIL — API des demandes de stage (TP6) — 18/11/2026</footer>
+
+</body></html>

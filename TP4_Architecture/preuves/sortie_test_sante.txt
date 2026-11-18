@@ -1,0 +1,5 @@
+Test de la route de santé (sans HTTP)
+------------------------------------
+Code HTTP : 200
+Corps     : {"statut":"ok","base":"ok","horodatage":"2026-11-18T13:27:52+00:00"}
+OK  route de santé conforme
