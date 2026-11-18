@@ -14,7 +14,7 @@ noir et blanc.
 |---|---|
 | `TP3_Modele_donnees.docx` | Rapport à rendre : diagrammes, tables, scénario, scripts et résultats. |
 | `TP3_Modele_donnees.pdf` | Aperçu du rapport. |
-| `cas_utilisation.svg` / `cas_utilisation.png` | Diagramme de cas d'utilisation corrigé (4 acteurs, 9 cas), source SVG et rendu PNG. |
+| `cas_utilisation.svg` / `cas_utilisation.png` | Diagramme de cas d'utilisation corrigé (3 acteurs principaux + 1 secondaire, 9 cas), source SVG et rendu PNG. |
 | `cas_utilisation.puml` | Variante PlantUML équivalente du diagramme de cas d'utilisation. |
 | `classes.puml` / `classes.png` | Diagramme de classes (9 classes, multiplicités). |
 | `001_schema.sql` | Création de la base `tp3_conventions`, des 9 tables, contraintes et 4 vues. |
@@ -23,7 +23,7 @@ noir et blanc.
 | `004_tests_contraintes.sql` | Insertions invalides : refus sans motif, email incorrect, entreprise inconnue, période inversée, doublon et chevauchement. |
 | `sortie_verification.txt` | Sortie brute de `003_verification.sql`. |
 | `sortie_tests_contraintes.txt` | Sortie brute de `004_tests_contraintes.sql`. |
-| `scenario_validation.md` | Scénario « Confirmer une convention » et codes HTTP. |
+| `scenario_validation.md` | Scénario « Valider une demande » et codes HTTP. |
 | `build_docx.py` | Script de génération du rapport DOCX via LibreOffice UNO. |
 
 ## Modèle retenu

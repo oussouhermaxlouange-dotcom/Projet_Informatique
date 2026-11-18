@@ -1,8 +1,8 @@
-ERROR 3819 (HY000) at line 11: Check constraint 'ck_convention_motif' is violated.
-ERROR 3819 (HY000) at line 17: Check constraint 'ck_utilisateur_email' is violated.
+ERROR 4025 (23000) at line 11: CONSTRAINT `ck_convention_motif` failed for `tp3_conventions`.`convention`
+ERROR 4025 (23000) at line 17: CONSTRAINT `ck_utilisateur_email` failed for `tp3_conventions`.`utilisateur`
 ERROR 1452 (23000) at line 21: Cannot add or update a child row: a foreign key constraint fails (`tp3_conventions`.`convention`, CONSTRAINT `fk_convention_entreprise` FOREIGN KEY (`entreprise_id`) REFERENCES `entreprise` (`id`))
-ERROR 3819 (HY000) at line 26: Check constraint 'ck_convention_periode' is violated.
-ERROR 1062 (23000) at line 35: Duplicate entry '1-2027-06-15 09:00:00' for key 'soutenance.uk_soutenance_salle_creneau'
+ERROR 4025 (23000) at line 26: CONSTRAINT `ck_convention_periode` failed for `tp3_conventions`.`convention`
+ERROR 1062 (23000) at line 35: Duplicate entry '1-2027-06-15 09:00:00' for key 'uk_soutenance_salle_creneau'
 +------------------------------+
 | conflits_pendant_transaction |
 +------------------------------+
