@@ -1,7 +1,8 @@
-# Scénario de validation — « Confirmer une convention »
+# Scénario de validation — « Valider une demande »
 
-Ce scénario décrit le cas d'utilisation **Confirmer une demande** du diagramme
-de cas d'utilisation. Il s'applique à une convention au statut `SOUMISE`.
+Ce scénario décrit le cas d'utilisation **Valider une demande** (noté
+« Confirmer une demande » sur le diagramme de cas d'utilisation). Il s'applique
+à une convention au statut `SOUMISE`.
 Le cas **Refuser une demande** suit le même chemin ; seule l'étape 5 change
 (un motif devient obligatoire).
 

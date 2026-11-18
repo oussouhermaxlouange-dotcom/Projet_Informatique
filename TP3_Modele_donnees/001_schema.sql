@@ -1,7 +1,7 @@
 -- Projet informatique 2 — L3 SIL
 -- Plateforme de suivi des conventions de stage et des soutenances
 -- 001_schema.sql — création du schéma sur une base vide
--- Dialecte : MySQL 8 / MariaDB 11
+-- Dialecte : MySQL 8 / MariaDB 10.4+
 -- Exécution : mysql -u root < 001_schema.sql
 
 SET NAMES utf8mb4;
@@ -157,10 +157,13 @@ CREATE TABLE soutenance (
   UNIQUE KEY uk_soutenance_encadreur_creneau (encadreur_id, date_heure),
   KEY idx_soutenance_convention_encadreur (convention_id, encadreur_id),
   KEY idx_soutenance_salle (salle_id),
+  -- Pas de ON UPDATE CASCADE : InnoDB le refuse quand la colonne référencée
+  -- est NULLable. Une réaffectation d'encadreur est donc bloquée par RESTRICT
+  -- dès qu'une soutenance existe, ce qui est le comportement attendu.
   CONSTRAINT fk_soutenance_convention_encadreur
     FOREIGN KEY (convention_id, encadreur_id)
     REFERENCES convention (id, encadreur_id)
-    ON UPDATE CASCADE ON DELETE RESTRICT,
+    ON DELETE RESTRICT,
   CONSTRAINT fk_soutenance_salle FOREIGN KEY (salle_id)
     REFERENCES salle (id),
   CONSTRAINT ck_soutenance_duree CHECK (duree_min BETWEEN 20 AND 240)

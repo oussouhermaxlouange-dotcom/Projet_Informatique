@@ -311,35 +311,37 @@ def build(path_odt, path_docx):
     )
     b.para("TP3 — version 1.0 — 17 novembre 2026", size=10, align=3, after=0.5, line=100)
     b.para(
-        "Groupe : [NOM 1], [NOM 2], [NOM 3], [NOM 4] — Dépôt Git : [url du dépôt partagé]",
+        "Groupe : KANHONOU Ashley, TCHEGNON Loïk, OUSSOU Hermax",
         size=9, align=3, after=3, line=100,
     )
 
     # ---------------- 1. Cas d'utilisation ----------------
     b.heading("1. Diagramme de cas d'utilisation")
     b.para(
-        "Le diagramme reprend les quatre acteurs du tableau blanc : l'étudiant, le responsable "
-        "pédagogique, l'administrateur et le développeur. Chaque acteur est relié directement aux "
-        "cas d'utilisation qu'il déclenche. Les décisions métier (confirmer, refuser) sont modélisées "
-        "comme des extensions de « Gérer une demande » : elles ne se produisent que dans ce contexte. "
-        "« Se connecter » est inclus par les cas principaux ; une légende rappelle que toute action "
-        "suppose une session authentifiée (EF-01).",
+        "Le diagramme distingue trois acteurs principaux (étudiant, responsable pédagogique, "
+        "administrateur) et un acteur secondaire, le développeur, placé à droite. L'étudiant n'est "
+        "relié qu'à « Gérer son compte » : « Soumettre une demande » et « Consulter une demande » sont "
+        "des cas inclus par celui-ci. Les décisions métier (confirmer, refuser) sont modélisées comme "
+        "des extensions de « Gérer une demande » : elles ne se produisent que dans ce contexte. "
+        "« Se connecter » est inclus par les cas principaux ; le développeur n'intervient que sur "
+        "« Gérer les comptes ». Une légende rappelle que toute action suppose une session "
+        "authentifiée (EF-01).",
         size=10, align=2, after=1.5,
     )
     b.figure("cas_utilisation.png", 140, "Figure 1 — Diagramme de cas d'utilisation (source : cas_utilisation.svg).")
 
     t = b.table(10, 4, [5200, 4200, 3400, 4200])
-    for i, h in enumerate(["Cas d'utilisation", "Acteur principal", "Type", "Exigence"]):
+    for i, h in enumerate(["Cas d'utilisation", "Acteur(s)", "Type", "Exigence"]):
         cell(b, t, 0, i, h, bold=True, align=(3 if i > 0 else 0))
     rows = [
         ("Gérer son compte", "Étudiant", "Direct", "EF-01"),
-        ("Soumettre une demande", "Étudiant", "Direct", "EF-02"),
-        ("Consulter une demande", "Étudiant", "Direct", "EF-06"),
+        ("Soumettre une demande", "Étudiant", "Include", "EF-02"),
+        ("Consulter une demande", "Étudiant", "Include", "EF-06"),
         ("Gérer une demande", "Responsable", "Direct", "EF-03"),
         ("Confirmer une demande", "Responsable", "Extend", "EF-03"),
-        ("Refuser une demande", "Responsable", "Extend", "EF-04"),
-        ("Programmer une soutenance", "Responsable, Admin", "Direct", "EF-07"),
-        ("Gérer les comptes", "Admin, Développeur", "Direct", "EF-08"),
+        ("Refuser une demande", "Responsable", "Extend", "EF-03"),
+        ("Programmer une soutenance", "Responsable, Admin", "Direct", "EF-05"),
+        ("Gérer les comptes", "Admin, Développeur", "Direct", "—"),
         ("Se connecter", "Tous les acteurs", "Include", "EF-01"),
     ]
     for r, row in enumerate(rows, start=1):
@@ -389,7 +391,7 @@ def build(path_odt, path_docx):
     )
 
     # ---------------- 3. Scénario ----------------
-    b.heading("3. Scénario de validation — « Confirmer une convention »")
+    b.heading("3. Scénario de validation — « Valider une demande »")
     b.para(
         "Le scénario part d'une convention au statut SOUMISE. Chaque échec renvoie un code HTTP distinct, "
         "ce qui rend le cas testable sans lire le code. Le refus suit le même chemin ; seule l'étape 5 "
@@ -460,7 +462,7 @@ def build(path_odt, path_docx):
     b.heading("5. Jeu d'essai et vérification")
     b.para(
         "Résultat obtenu en exécutant 001_schema.sql, 002_seed.sql puis 003_verification.sql sur une base "
-        "vide, sous MySQL 8.0.46. Sortie brute de 003_verification.sql (les blocs sont séparés pour la lecture) :",
+        "vide, sous MariaDB 10.4.32 (XAMPP). Sortie brute de 003_verification.sql (les blocs sont séparés pour la lecture) :",
         size=10, align=2, after=1.5,
     )
     for block in verification_output("sortie_verification.txt"):
@@ -477,13 +479,13 @@ def build(path_odt, path_docx):
         cell(b, t, 0, i, h, bold=True)
     rows = [
         ("Refus sans motif", "INSERT … statut = 'REFUSEE', motif NULL",
-         "ERROR 3819 : Check constraint 'ck_convention_motif' is violated.", "Aucune ligne"),
+         "ERROR 4025 : CONSTRAINT ck_convention_motif failed.", "Aucune ligne"),
         ("Email sans arobase", "INSERT utilisateur … 'sans-arobase.test'",
-         "ERROR 3819 : Check constraint 'ck_utilisateur_email' is violated.", "Aucune ligne"),
+         "ERROR 4025 : CONSTRAINT ck_utilisateur_email failed.", "Aucune ligne"),
         ("Entreprise inexistante", "INSERT … entreprise_id = 999",
          "ERROR 1452 : fk_convention_entreprise fails.", "Aucune ligne"),
         ("Période inversée", "INSERT … date_debut > date_fin",
-         "ERROR 3819 : Check constraint 'ck_convention_periode' is violated.", "Aucune ligne"),
+         "ERROR 4025 : CONSTRAINT ck_convention_periode failed.", "Aucune ligne"),
         ("Doublon salle/créneau", "INSERT … salle 1, 15/06/2027 09:00",
          "ERROR 1062 : Duplicate entry for key 'uk_soutenance_salle_creneau'.", "Aucune ligne"),
         ("Chevauchement de 30 min", "INSERT … salle 1, 15/06/2027 09:30",
@@ -514,7 +516,7 @@ def build(path_odt, path_docx):
         dp = doc.getDocumentProperties()
         dp.Title = "TP3 — UML et modélisation des données"
         dp.Subject = "Plateforme de suivi des conventions de stage et des soutenances"
-        dp.Author = "Groupe [0X]"
+        dp.Author = "KANHONOU Ashley, TCHEGNON Loïk, OUSSOU Hermax"
         dp.Description = "TP3 — Projet informatique 2, L3 SIL"
     except Exception:
         pass
