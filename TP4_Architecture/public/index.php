@@ -8,12 +8,31 @@ declare(strict_types=1);
 
 use App\Repositories\DatabaseIndisponibleException;
 use App\Support\ApiException;
+use App\Support\Csrf;
 use App\Support\Env;
 use App\Support\Request;
 use App\Support\Response;
 use App\Support\Router;
 
 require dirname(__DIR__) . '/src/autoload.php';
+
+// Serveur intégré de PHP : les fichiers réels (HTML, CSS, JS) sont servis
+// directement, seules les routes /api/... arrivent au front controller.
+if (PHP_SAPI === 'cli-server') {
+    $chemin = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+
+    if (is_string($chemin)) {
+        if ($chemin === '/') {
+            header('Content-Type: text/html; charset=utf-8');
+            readfile(__DIR__ . '/index.html');
+            return;
+        }
+
+        if (!str_contains($chemin, '..') && is_file(__DIR__ . $chemin)) {
+            return false;
+        }
+    }
+}
 
 Env::load(dirname(__DIR__) . '/.env');
 date_default_timezone_set('UTC');
@@ -24,6 +43,9 @@ header_remove('X-Powered-By');
 $requete = Request::depuisGlobals();
 
 try {
+    // Refuse les écritures venues d'un autre site avant tout traitement.
+    Csrf::verifier($requete, $_SERVER);
+
     /** @var Router $router */
     $router = require dirname(__DIR__) . '/config/routes.php';
     $reponse = $router->dispatch($requete);

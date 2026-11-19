@@ -34,6 +34,12 @@ L'API utilise une session PHP côté serveur :
 
 Les routes protégées répondent `401 NON_AUTHENTIFIE` sans session valide.
 
+**Protection CSRF.** Trois barrières : cookie `SameSite=Lax`, API JSON sans en-tête CORS,
+et contrôle explicite de `Origin` sur `POST`, `PATCH`, `PUT` et `DELETE`
+(`src/Support/Csrf.php`). Si `Origin` est présent et ne correspond pas à `Host`, la
+réponse est `403 ORIGINE_REFUSEE` avant le routeur. Un client sans navigateur (`curl`,
+script de test) n'envoie pas `Origin` : il reste soumis à l'authentification par session.
+
 ## 3. Enveloppe d'erreur
 
 ```json
@@ -124,6 +130,9 @@ Détail d'une demande.
 
 - `200` : `{ "demande": { ... } }`
 - `404 DEMANDE_INCONNUE` ; `403 ACCES_REFUSE` si un étudiant demande la fiche d'un autre.
+- L'identifiant doit être un entier positif écrit en chiffres (`ctype_digit`). `12abc`
+  ou `1 OR 1=1` répondent `404` **avant** tout appel au dépôt : aucune requête SQL n'est
+  construite avec la valeur reçue.
 
 ### 4.7 `POST /api/demandes`
 
@@ -202,6 +211,7 @@ dans `details`, sans modifier la base.
 | `PROFIL_MANQUANT` | 403 | Compte sans fiche étudiant/encadreur. |
 | `COMPTE_INACTIF` | 403 | Compte désactivé. |
 | `ACCES_REFUSE` | 403 | Ressource appartenant à un autre utilisateur. |
+| `ORIGINE_REFUSEE` | 403 | Écriture reçue avec un en-tête `Origin` étranger à l'application. |
 | `ROUTE_INCONNUE` | 404 | Chemin inconnu. |
 | `DEMANDE_INCONNUE` | 404 | Identifiant absent de `convention`. |
 | `METHODE_NON_AUTORISEE` | 405 | Méthode HTTP non prévue pour ce chemin. |
@@ -233,10 +243,28 @@ dans `details`, sans modifier la base.
 
 Les dates sont exprimées en UTC (le front controller fixe `date_default_timezone_set('UTC')`).
 
-## 8. Preuves
+## 8. Interface Web
+
+L'application sert aussi l'interface dans `public/` (même origine que l'API) :
+
+- `GET /` renvoie `public/index.html` ;
+- `GET /assets/...`, `/preuves/...` renvoient les fichiers réels (CSS, JS, SVG, HTML) ;
+- tout le reste passe par le front controller et le routeur JSON.
+
+Avec le serveur intégré de PHP, `public/index.php` renvoie `false` pour un fichier
+existant, ce qui laisse le serveur le servir directement. Avec Apache, `.htaccess`
+laisse également passer les fichiers existants (`!-f`).
+
+L'interface appelle les routes ci-dessus avec `fetch` (`credentials: 'same-origin'`) et
+construit les tableaux avec `textContent`. Détail du parcours et des preuves :
+`../TP7_Frontend/README.md`.
+
+## 9. Preuves
 
 - Six cas demandés (succès, 400, 401, 403, 404, 409) : `preuves/sortie_api.txt`.
 - Détail de chaque cas : `docs/tp6_cas_tests.md`.
 - Tests unitaires : `preuves/sortie_test_domain.txt`, `sortie_test_routes.txt`.
 - Connexion PDO : `preuves/sortie_test_connexion.txt`.
 - Base injoignable (503) : `preuves/sortie_test_sante_503.txt`.
+- Interface et scénario TP7 : `../TP7_Frontend/preuves/`.
+- Matrice et audit TP8 : `../TP8_Tests/preuves/sorties.tsv`.

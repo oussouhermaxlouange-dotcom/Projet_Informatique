@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conventions de stage</title>
+  <meta name="description" content="Déposer, suivre et instruire les demandes de stage.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/app.css">
+  <script src="assets/api.js" defer></script>
+  <script src="assets/rendu.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller au contenu principal</a>
+  <header class="topbar">
+    <a class="brand" href="#mes-demandes" data-nav="home">Conventions</a>
+    <nav class="main-nav" id="navigation" aria-label="Navigation principale" hidden>
+      <button type="button" data-nav="mes-demandes" data-role="student">Mes demandes</button>
+      <button type="button" data-nav="nouvelle-demande" data-role="student">Nouvelle demande</button>
+      <button type="button" data-nav="demandes-a-traiter" data-role="manager">Dossiers à traiter</button>
+    </nav>
+    <div class="account" id="zone-session" hidden>
+      <span class="role-pill" id="role-connecte"></span>
+      <span class="account-name" id="identite"></span>
+      <button type="button" class="text-button" id="deconnexion">Déconnexion</button>
+    </div>
+  </header>
+
+  <main id="contenu">
+    <div class="status-line" id="etat-api" role="status">Connexion au service…</div>
+    <div class="notice notice-error" id="zone-erreur" role="alert" aria-live="assertive" hidden>
+      <p class="notice-title alerte-titre" id="erreur-titre"></p><ul class="alerte-details" id="erreur-details"></ul>
+    </div>
+    <p class="notice notice-success" id="zone-succes" role="status" hidden></p>
+
+    <section class="screen login-screen" id="vue-connexion" aria-labelledby="titre-connexion" hidden>
+      <div class="login-card">
+        <div class="login-heading"><span class="eyebrow">Portail conventions</span><span class="api-badge" id="etat-badge">Service actif</span></div>
+        <h1 id="titre-connexion">Connexion</h1>
+        <div class="role-switch" aria-label="Type de compte de démonstration">
+          <button type="button" class="selected" data-login-role="ETUDIANT">Étudiant</button>
+          <button type="button" data-login-role="RESPONSABLE">Responsable</button>
+        </div>
+        <form id="formulaire-connexion" novalidate>
+          <div class="field"><label for="email">Adresse e-mail</label><input type="email" id="email" name="email" autocomplete="username" placeholder="prenom.nom@univ.test" required aria-describedby="erreur-email"><p class="field-error" id="erreur-email" hidden></p></div>
+          <div class="field"><div class="label-row"><label for="mot-de-passe">Mot de passe</label><span class="muted small">Compte de démonstration</span></div><input type="password" id="mot-de-passe" name="mot_de_passe" autocomplete="current-password" placeholder="••••••••••••" required aria-describedby="erreur-mot-de-passe"><p class="field-error" id="erreur-mot-de-passe" hidden></p></div>
+          <button type="submit" class="button button-dark button-wide" id="connexion-submit">Se connecter</button>
+        </form>
+        <details class="demo-accounts"><summary>Voir les comptes de démonstration</summary><p>Étudiante : sena.houngbo@univ.test</p><p>Responsable : responsable.pedago@univ.test</p><p>Mot de passe : <code>Demo1234!</code></p></details>
+        <p class="login-foot">Environnement pédagogique · données fictives</p>
+      </div>
+    </section>
+
+    <section class="screen" id="vue-liste-etudiant" aria-labelledby="titre-mes-demandes" hidden>
+      <div class="page-heading"><div><p class="eyebrow">Espace académique · L3 SIL</p><div class="title-line"><h1 id="titre-mes-demandes">Mes demandes</h1><span class="count-pill" id="compteur-etudiant">0 conventions</span></div></div><button type="button" class="button button-dark" data-nav="nouvelle-demande">Nouvelle demande</button></div>
+      <div class="summary-grid" id="stats-etudiant" aria-label="Répartition de mes demandes par statut"></div>
+      <div class="filter-row"><p>Conventions déposées et décisions</p><button type="button" class="button button-light button-small" data-action="rafraichir">Actualiser</button></div>
+      <p class="empty-state" id="vide-etudiant" hidden>Aucune convention pour le moment. Déposez votre première demande.</p>
+      <div class="table-shell"><table><caption class="sr-only">Liste de mes demandes de stage</caption><thead><tr><th scope="col">Intitulé du stage</th><th scope="col">Entreprise</th><th scope="col">Période</th><th scope="col">Statut</th><th scope="col">Action</th></tr></thead><tbody id="corps-etudiant"></tbody></table></div>
+    </section>
+
+    <section class="screen form-screen" id="vue-etudiant" aria-labelledby="titre-nouvelle-demande" hidden>
+      <button type="button" class="back-button" data-nav="mes-demandes">Retour à mes demandes</button>
+      <div class="page-heading compact"><div><h1 id="titre-nouvelle-demande">Nouvelle convention</h1><p class="muted">Renseignez les informations de votre stage.</p></div><span class="eyebrow">Dossier étudiant</span></div>
+      <div class="form-layout"><form class="panel form-panel" id="formulaire-demande" novalidate>
+        <div class="field"><label for="entreprise">Entreprise d’accueil <span class="required">*</span></label><select id="entreprise" name="entreprise_id" required aria-describedby="erreur-entreprise"><option value="">Choisir une entreprise…</option><option value="1">Studio Kora</option><option value="2">Données et Territoires</option></select><p class="field-hint">Sélectionnez l’entreprise de votre convention.</p><p class="field-error" id="erreur-entreprise" hidden></p></div>
+        <div class="field"><label for="intitule">Intitulé de la mission <span class="required">*</span></label><input type="text" id="intitule" name="intitule" minlength="5" maxlength="120" placeholder="Ex. Développement d’un tableau de bord" required aria-describedby="erreur-intitule"><p class="field-error" id="erreur-intitule" hidden></p></div>
+        <div class="field-grid"><div class="field"><label for="date-debut">Date de début <span class="required">*</span></label><input type="date" id="date-debut" name="date_debut" required aria-describedby="erreur-debut"><p class="field-error" id="erreur-debut" hidden></p></div><div class="field"><label for="date-fin">Date de fin <span class="required">*</span></label><input type="date" id="date-fin" name="date_fin" required aria-describedby="erreur-fin"><p class="field-error" id="erreur-fin" hidden></p></div></div>
+        <label class="check-row"><input type="checkbox" id="soumettre" name="soumettre" checked><span><strong>Soumettre la convention</strong><small>Votre demande sera transmise au responsable pédagogique.</small></span></label>
+        <div class="form-actions"><button type="button" class="button button-light" data-nav="mes-demandes">Annuler</button><button type="submit" class="button button-dark" id="envoyer-demande">Soumettre la convention</button></div>
+      </form><aside class="side-stack"><div class="side-card"><p class="eyebrow">Processus d’approbation</p><h2>Circuit de validation</h2><ol class="steps"><li class="current"><span>1</span><div><strong>Dépôt de la convention</strong><p>La demande est enregistrée et transmise pour instruction.</p></div></li><li><span>2</span><div><strong>Validation pédagogique</strong><p>Le responsable consulte le dossier et rend sa décision.</p></div></li><li><span>3</span><div><strong>Suivi de la décision</strong><p>Retrouvez le statut et le motif éventuel dans vos demandes.</p></div></li></ol></div><div class="side-note">Tous les champs marqués d’un astérisque sont obligatoires.</div></aside></div>
+    </section>
+
+    <section class="screen" id="vue-detail" aria-labelledby="titre-detail" hidden>
+      <button type="button" class="back-button" data-nav="home">Retour aux demandes</button>
+      <div class="detail-heading"><div><div class="title-line"><h1 id="titre-detail">Détail de la convention</h1><span id="statut-detail"></span></div><p class="muted" id="meta-detail"></p></div></div>
+      <div class="detail-grid"><div class="panel detail-main"><h2>Informations du stage</h2><div class="data-grid"><div><span class="data-label">Étudiant</span><strong id="detail-etudiant">—</strong></div><div><span class="data-label">Entreprise d’accueil</span><strong id="detail-entreprise">—</strong></div><div><span class="data-label">Intitulé de la mission</span><strong id="detail-intitule">—</strong></div><div><span class="data-label">Période de stage</span><strong id="detail-periode">—</strong></div><div><span class="data-label">Date de dépôt</span><strong id="detail-depot">—</strong></div><div><span class="data-label">Date de décision</span><strong id="detail-decision">En attente</strong></div></div><div class="refusal-panel" id="detail-motif-wrap" hidden><h2>Motif de refus</h2><p id="detail-motif"></p></div></div><aside class="panel detail-aside"><p class="eyebrow">Circuit de décision</p><h2 id="detail-circuit-title">Instruction de la demande</h2><div class="progress-track"><span id="progress-step"></span></div><p class="muted" id="detail-circuit-copy"></p></aside></div>
+    </section>
+
+    <section class="screen" id="vue-responsable" aria-labelledby="titre-responsable" hidden>
+      <div class="page-heading"><div><p class="eyebrow">Administration académique · Validation</p><div class="title-line"><h1 id="titre-responsable">Dossiers à traiter</h1><span class="count-pill" id="compteur-responsable">0 en attente</span></div></div><div class="toolbar-stat" id="delai-moyen">File de traitement</div></div>
+      <div class="manager-toolbar"><div class="filter-tabs" role="group" aria-label="Filtrer les demandes"><button class="active" type="button" data-filter="all">Tous</button><button type="button" data-filter="SOUMISE">En attente</button><button type="button" data-filter="VALIDEE">Validés</button><button type="button" data-filter="REFUSEE">Refusés</button></div><label class="search-box"><span class="sr-only">Filtrer par étudiant ou entreprise</span><input id="filtre-demandes" type="search" placeholder="Filtrer par étudiant, entreprise…"></label></div>
+      <p class="empty-state" id="vide-responsable" hidden>Aucune demande à afficher.</p>
+      <div class="manager-list" id="liste-responsable"></div>
+    </section>
+
+    <section class="screen" id="vue-traiter" aria-labelledby="titre-traiter" hidden>
+      <button type="button" class="back-button" data-nav="demandes-a-traiter">Retour aux dossiers à traiter</button>
+      <div class="page-heading compact"><div><p class="eyebrow">Instruction pédagogique <span class="status-inline" id="statut-traiter"></span></p><h1 id="titre-traiter">Décision de convention</h1><p class="muted" id="meta-traiter"></p></div></div>
+      <div class="review-summary-grid"><article class="summary-detail"><span class="data-label">Étudiant</span><strong id="traiter-etudiant">—</strong><small id="traiter-reference">Convention —</small></article><article class="summary-detail"><span class="data-label">Structure d’accueil</span><strong id="traiter-entreprise">—</strong><small>Entreprise déclarée par l’étudiant</small></article><article class="summary-detail"><span class="data-label">Intitulé du poste</span><strong id="traiter-intitule">—</strong><small>Mission déclarée</small></article><article class="summary-detail"><span class="data-label">Durée et rythme</span><strong id="traiter-periode">—</strong><small>Période déclarée dans le dossier</small></article></div>
+      <div class="review-grid"><div class="panel review-data"><h2>Éléments du dossier</h2><div class="compliance-list"><div><span class="check-mark">OK</span><p><strong>Demande transmise</strong><small>Le dossier est enregistré dans l’API.</small></p></div><div><span class="check-mark">OK</span><p><strong>Informations de stage présentes</strong><small>L’entreprise, l’intitulé et la période sont consultables.</small></p></div><div><span class="check-mark">Règle</span><p><strong>Refus motivé</strong><small>Un motif de 3 à 255 caractères est requis pour refuser.</small></p></div></div><div class="review-note">Cette version ne gère pas les pièces jointes, les signatures ni les données de rémunération.</div></div><form class="panel decision-panel" id="formulaire-decision" novalidate><h2>Motif de refus ou observations</h2><p class="muted">Précisez les réserves pédagogiques ou le motif du refus.</p><label class="sr-only" for="motif">Motif de refus ou observations pédagogiques</label><textarea id="motif" name="motif" rows="6" maxlength="255" placeholder="Précisez la raison de votre décision…" aria-describedby="erreur-motif"></textarea><p class="field-error" id="erreur-motif" hidden></p><p class="field-hint">Obligatoire en cas de refus · 3 à 255 caractères</p></form></div>
+      <div class="decision-bar"><p>La décision sera inscrite dans l’historique du dossier.</p><div class="decision-actions"><button type="button" class="button button-light" data-action="retour-traitement">Annuler</button><button type="button" class="button button-danger" data-decision="REFUSEE">Refuser la demande</button><button type="button" class="button button-dark" data-decision="VALIDEE">Valider la convention</button></div></div>
+    </section>
+  </main>
+  <footer class="footer"><span>© <span id="annee">2026</span> Conventions de stage · Projet informatique 2</span><span>Données pédagogiques fictives</span></footer>
+</body>
+</html>

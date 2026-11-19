@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Demandes de stage">
+  <rect width="32" height="32" rx="6" fill="#23345e"/>
+  <rect x="7.5" y="6.5" width="17" height="19" rx="1.5" fill="none" stroke="#f1f2ec" stroke-width="1.5"/>
+  <path d="M11 12h10M11 16h10M11 20h6" stroke="#f1f2ec" stroke-width="1.5" stroke-linecap="round"/>
+  <rect x="20" y="19" width="7" height="7" fill="#23345e" stroke="#f1f2ec" stroke-width="1.2"/>
+</svg>

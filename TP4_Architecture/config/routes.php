@@ -14,6 +14,21 @@ use App\Support\Router;
  */
 $router = new Router();
 
+/**
+ * Un identifiant de demande doit être un entier positif écrit en chiffres.
+ * « 1 OR 1=1 » ou « 12abc » ne sont pas convertis en entier : on répond 404
+ * avant tout appel au dépôt (aucune requête SQL n'est construite).
+ */
+$identifiant = static function (array $parametres): ?int {
+    $id = $parametres['id'] ?? null;
+
+    if (!is_string($id) || !ctype_digit($id) || (int) $id <= 0) {
+        return null;
+    }
+
+    return (int) $id;
+};
+
 $router->add(
     'GET',
     '/api/sante',
@@ -47,10 +62,15 @@ $router->add(
 $router->add(
     'GET',
     '/api/demandes/{id}',
-    static fn (array $parametres, Request $requete): Response => (new DemandeController())->detail(
-        (int) $parametres['id'],
-        $requete
-    )
+    static function (array $parametres, Request $requete) use ($identifiant): Response {
+        $id = $identifiant($parametres);
+
+        if ($id === null) {
+            return Response::erreur(404, 'DEMANDE_INCONNUE', 'Demande inconnue.');
+        }
+
+        return (new DemandeController())->detail($id, $requete);
+    }
 );
 
 $router->add(
@@ -62,10 +82,15 @@ $router->add(
 $router->add(
     'PATCH',
     '/api/demandes/{id}/statut',
-    static fn (array $parametres, Request $requete): Response => (new DemandeController())->changerStatut(
-        (int) $parametres['id'],
-        $requete
-    )
+    static function (array $parametres, Request $requete) use ($identifiant): Response {
+        $id = $identifiant($parametres);
+
+        if ($id === null) {
+            return Response::erreur(404, 'DEMANDE_INCONNUE', 'Demande inconnue.');
+        }
+
+        return (new DemandeController())->changerStatut($id, $requete);
+    }
 );
 
 return $router;

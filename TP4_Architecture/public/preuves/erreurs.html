@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preuve — erreurs 400, 401 et 500</title>
+  <link rel="stylesheet" href="../assets/app.css">
+  <script src="../assets/api.js" defer></script>
+  <script src="erreurs.js" defer></script>
+</head>
+<body>
+  <main>
+    <section class="panel" style="max-width:980px;margin:0 auto">
+      <p class="eyebrow">TP7 — preuve de gestion des erreurs</p>
+      <h1>Réponses 400, 401 et 500 rendues à l’utilisateur</h1>
+      <p class="muted">
+        Les trois blocs utilisent le composant <code>assets/api.js</code>, celui que
+        l’application appelle après chaque requête. Les corps JSON sont ceux de
+        l’API ; seul le statut HTTP change la présentation.
+      </p>
+
+      <div class="notice notice-error" id="e400" role="alert" hidden>
+        <p class="notice-title alerte-titre" style="margin:0"></p><ul class="alerte-details"></ul>
+      </div>
+      <div class="notice notice-error" id="e401" role="alert" hidden>
+        <p class="notice-title alerte-titre" style="margin:0"></p><ul class="alerte-details"></ul>
+      </div>
+      <div class="notice notice-error" id="e500" role="alert" hidden>
+        <p class="notice-title alerte-titre" style="margin:0"></p><ul class="alerte-details"></ul>
+      </div>
+
+      <p class="field-hint">
+        Les erreurs 422 ajoutent, en plus du message global, un message sous chaque
+        champ concerné (voir la capture du formulaire).
+      </p>
+    </section>
+  </main>
+</body>
+</html>
