@@ -1,0 +1,4 @@
+Tests exécutés : 14
+Conformes      : 14 / 14
+Empreintes     : 8 / 8 en bcrypt, 0 en clair
+Base           : 7 conventions, 10 lignes d'historique

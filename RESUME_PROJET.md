@@ -1,14 +1,15 @@
-# Résumé du projet — TP1 à TP6
+# Résumé du projet — TP1 à TP8
 
 **Projet informatique 2 · L3 SIL**  
 Application Web de gestion des stages et des soutenances  
 Membres : OUSSOU Hermax, TCHEGNON Loïk, KANHONOU Ashley  
 Encadreur : MAMA Tairou  
-Version : 2.1 — 18/11/2026
+Version : 2.3 — 19/11/2026
 
 Ce document récapitule l'ensemble du travail réalisé : les livrables, les décisions
-techniques, les tests et les preuves conservées. Le livrable TP6 (rapport et
-preuves) est dans `TP6_API/` ; l'application reste dans `TP4_Architecture/`.
+techniques, les tests et les preuves conservées. Les livrables documentaires sont dans
+`TP6_API/`, `TP7_Frontend/` et `TP8_Tests/` ; l'application (API et interface) reste
+dans `TP4_Architecture/`.
 
 ---
 
@@ -22,6 +23,8 @@ preuves) est dans `TP6_API/` ; l'application reste dans `TP4_Architecture/`.
 | TP4 | Squelette technique et contrat d'API | `TP4_Architecture/` | Terminé |
 | TP5 | Dépôt Git et organisation d'équipe | Dépôt Git avec 3 commits | Partiel (voir §6) |
 | TP6 | API des demandes | `TP6_API/` (rapport HTML/PDF/DOCX + preuves) et `TP4_Architecture/` (code) | Terminé |
+| TP7 | Interface et intégration | `TP7_Frontend/` (parcours, scénario, preuves, rapport) et `TP4_Architecture/public/` (code) | Terminé |
+| TP8 | Plan de tests et audit de sécurité | `TP8_Tests/` (matrice, revue, recette, preuves, rapport) | Terminé |
 
 Fil rouge : application locale de suivi des demandes de stage et des soutenances,
 avec des données fictives uniquement, réalisée en 25 heures par un groupe de trois.
@@ -129,7 +132,7 @@ Dossier : `TP4_Architecture/`.
 
 ```text
 TP4_Architecture/
-├── public/            # point d'entrée unique + .htaccess
+├── public/            # point d'entrée unique, interface (index.html, assets/), .htaccess
 ├── src/
 │   ├── Controllers/   # adaptation HTTP
 │   ├── Services/      # règles métier
@@ -170,7 +173,8 @@ main, donc à tester ; pas d'outillage de framework.
 
 - dépôt Git initialisé à la racine ;
 - trois commits : `41e14a9` (TP1), `d7eaf5a` (TP2), `51b04fe` (TP3) ;
-- TP4 et TP6 sont présents dans le dossier de travail mais **pas encore commités**.
+- TP4, TP6, TP7 et TP8 sont présents dans le dossier de travail mais **pas encore
+  commités** ; le travail est laissé non commité à la demande du groupe.
 
 Non formalisé à ce stade : tableau Kanban, conventions de branches courtes,
 revues de code écrites. À compléter si le rendu TP5 est demandé séparément.
@@ -255,7 +259,129 @@ couvrent le refus motivé, les listes par rôle et l'entreprise inconnue (422).
 
 ---
 
-## 8. Tests et preuves
+## 8. TP7 — Interface et intégration
+
+L'interface est servie par l'application elle-même, dans
+`TP4_Architecture/public/` : même origine que l'API, donc même cookie de session,
+sans duplication ni CORS. Les preuves et le rapport sont dans `TP7_Frontend/`.
+
+### 8.1 Réponse aux cinq points du sujet
+
+| Point du sujet | Réalisation |
+|---|---|
+| Dessiner les parcours des deux rôles | `TP7_Frontend/parcours.svg` / `.png` : deux couloirs, écrans, actions et échanges. |
+| Formulaire de dépôt avec étiquettes liées et zone d'erreur | `public/index.html` : `label for`, `aria-describedby`, `role="alert"`, une zone `erreur-…` par champ. |
+| Appels `fetch`, erreurs 400, 401, 500 lisibles | `public/assets/api.js` : `fetch` en `same-origin`, table des messages, titre + détails ; page de preuve `preuves/erreurs.html`. |
+| Liste avec `textContent`, test des balises | `public/assets/rendu.js` : aucun `innerHTML` ; `preuves/xss.html` et `xss_verification.txt` (0 balise créée, `data-xss` absent). |
+| Scénario complet | `TP7_Frontend/scenario.md` : créer, consulter, filtrer, valider, refuser, persistance, avec 13 captures. |
+
+### 8.2 Écrans et rôles
+
+| Rôle | Écrans | Actions |
+|---|---|---|
+| `ETUDIANT` | Connexion, « Mes demandes », « Nouvelle convention », « Détail » | Créer une convention (entreprise, intitulé, dates), suivre statut, date de décision et motif. |
+| `RESPONSABLE` | Connexion, « Dossiers à traiter », « Décision de convention », « Détail » | Rechercher et filtrer par statut, valider ou refuser avec motif obligatoire ; décision reportée dans le détail de l'étudiante. |
+| `ADMIN` | « Dossiers à traiter », « Détail » | Consultation de tous les dossiers, sans bouton de décision. |
+| `ENCADREUR` | « Mes demandes », « Détail » | Consultation des demandes qu'il encadre, sans décision. |
+
+Direction visuelle : portail administratif contemporain, fond papier ivoire
+(`#faf9f2`), surfaces blanches, accent violet (`#5148dc`) pour les liens et les
+états actifs, boutons principaux noirs. Contenu centré sur 1600 px au maximum,
+sans bordure décorative autour des cartes ; trois compteurs (validées, en cours
+de revue, rejetées) ouvrent « Mes demandes », le nombre de dossiers en attente
+est rappelé côté responsable. Polices locales (Inter, Lato), aucune requête
+externe.
+
+### 8.3 Accessibilité et erreurs
+
+- étiquettes liées à chaque champ, aide et zone d'erreur reliées par `aria-describedby` ;
+- zone globale `role="alert"` + `aria-live="assertive"`, messages de réussite en
+  `role="status"` ;
+- `aria-invalid="true"` sur le champ fautif, message texte sous le champ ;
+- lien d'évitement, `:focus-visible` sur tous les contrôles ; la décision est un
+  écran dédié (sans dialogue) et le focus est placé sur le motif en cas de refus
+  non motivé ;
+- statut écrit en toutes lettres ; la couleur ne fait que renforcer ;
+- `novalidate` sur les formulaires : les messages affichés sont ceux de l'API (422).
+
+Codes traités : `400`, `401` (retour à la connexion), `403`, `404`, `405`, `409`,
+`422`, `500`, `503`, plus le cas « serveur injoignable ».
+
+### 8.4 Rendu sécurisé
+
+Les valeurs reçues de l'API sont insérées dans des nœuds créés par
+`document.createElement`, puis affectées à `textContent`. Deux charges hostiles
+(`<img onerror=…>` et `<script>…</script>`) ont été envoyées par le formulaire et
+rejouées sur `/preuves/xss.html` : aucune balise n'est interprétée, `data-xss` reste
+absent. Preuve : `TP7_Frontend/preuves/xss_verification.txt` et `xss_dom.html`.
+
+### 8.5 Livrable `TP7_Frontend/`
+
+| Fichier | Contenu |
+|---|---|
+| `parcours.svg` / `.png` | Parcours des deux rôles |
+| `scenario.md` | Scénario de bout en bout, protocole, commandes de rejeu |
+| `preuves/01…13.png` | 13 captures réelles, de la connexion au test XSS |
+| `preuves/xss_verification.txt`, `xss_dom.html` | Contrôle chiffré et DOM complet |
+| `README.md` | Contenu, accessibilité, erreurs, limites |
+| `interface_tp7.html` / `.pdf` / `.docx` | Rapport 2 pages A4, noir et blanc, avec le schéma des parcours |
+
+---
+
+## 9. TP8 — Plan de tests et audit de sécurité
+
+Les tests s'exécutent contre l'API réelle, sur une base rechargée depuis le jeu
+d'essai TP3. Preuves et documents dans `TP8_Tests/`.
+
+### 9.1 Réponse aux cinq points du sujet
+
+| Point du sujet | Réalisation |
+|---|---|
+| Matrice d'au moins huit lignes, attendu écrit avant | `TP8_Tests/matrice_tests.md` : 14 lignes (test, exigence, données, attendu, observé, preuve) ; l'attendu est un paramètre du script. |
+| Quatre cas limites | T-01 demande inexistante (404), T-02 refus sans motif (422 + statut inchangé), T-03 validation répétée (409 + statut inchangé), T-04 date invalide (422). |
+| Autorisation et injection | T-05 étudiante B → dossier A (403) ; T-06 `1 OR 1=1` en identifiant (404) ; T-09/T-09b dans les champs de connexion (422/401). |
+| Mots de passe hachés et CSRF | T-13 : 8/8 empreintes bcrypt, 0 en clair ; CSRF : `SameSite=Lax` + API sans CORS + contrôle `Origin` (403 `ORIGINE_REFUSEE`). |
+| Quatre remarques de revue classées | `TP8_Tests/revue_code.md` : R-01 bloquante corrigée, R-02 majeure corrigée, R-03 mineure corrigée, R-04 majeure acceptée et planifiée. |
+
+### 9.2 Résultats
+
+- **14 tests exécutés, 14 conformes** (`preuves/sorties.tsv`, `preuves/resume.txt`) ;
+- **8/8 mots de passe en bcrypt**, longueur 60, aucun en clair (`preuves/hachages.tsv`) ;
+- **5 scénarios de recette sur 5 conformes** (`recette.md`).
+
+| Thème | Tests | Attendu |
+|---|---|---|
+| Cas limites | T-01 à T-04 | 404, 422, 409, 422 |
+| Autorisation | T-05, T-07, T-08 | 403, 401, 403 |
+| Injection | T-06, T-09, T-09b | 404, 422, 401 |
+| CSRF | T-10 | 403 `ORIGINE_REFUSEE` |
+| Données hostiles | T-11, T-12 | 201 stocké tel quel, 422 sans écriture |
+| Mots de passe | T-13 | 8/8 bcrypt, 0 en clair |
+
+### 9.3 Corrections issues de la revue
+
+| Réf. | Constat | Niveau | État |
+|---|---|---|---|
+| R-01 | `(int)` acceptait `12abc` et `1 OR 1=1` ; validation par `ctype_digit` | Bloquante | Corrigée, testée T-06 |
+| R-02 | CSRF implicite (`SameSite=Lax` seul) ; ajout du contrôle `Origin` | Majeure | Corrigée, testée T-10 |
+| R-03 | Formulaire de refus sans `novalidate`, message maison masqué | Mineure | Corrigée, testée au scénario TP7 |
+| R-04 | Pas de limitation des tentatives de connexion | Majeure | Acceptée en local, planifiée (429, 5 essais/15 min) |
+
+### 9.4 Livrable `TP8_Tests/`
+
+| Fichier | Contenu |
+|---|---|
+| `tests_securite.sh` | Recharge la base, démarre l'API sur 8086, rejoue les 14 tests, écrit les preuves |
+| `matrice_tests.md` | Matrice complète et quatre cas limites détaillés |
+| `revue_code.md` | 4 remarques classées, correctifs et dette technique |
+| `recette.md` | 5 scénarios, réserves, signatures |
+| `preuves/sorties.tsv`, `hachages.tsv`, `resume.txt` | Sorties réelles |
+| `tests_securite.html` / `.pdf` / `.docx` | Rapport 2 pages A4, noir et blanc |
+| `README.md` | Contenu, rejeu, sécurité, limites |
+
+---
+
+## 10. Tests et preuves
 
 | Fichier | Ce qu'il vérifie | Résultat |
 |---|---|---|
@@ -277,7 +403,7 @@ Preuves conservées dans `TP4_Architecture/preuves/` :
 
 Tableau détaillé des six cas : `TP4_Architecture/docs/tp6_cas_tests.md`.
 
-### 8.1 Preuves du livrable `TP6_API/`
+### 10.1 Preuves du livrable `TP6_API/`
 
 | Fichier | Ce qu'il montre | Résultat |
 |---|---|---|
@@ -290,7 +416,7 @@ Tableau détaillé des six cas : `TP4_Architecture/docs/tp6_cas_tests.md`.
 
 ---
 
-## 9. État du dépôt
+## 11. État du dépôt
 
 ```text
 41e14a9  Commit TP1 Hermax
@@ -298,26 +424,24 @@ d7eaf5a  feat: Commit TP2
 51b04fe  Commit TP3
 ```
 
-- Les dossiers `TP4_Architecture/` (TP4 + TP6), `TP6_API/` (rapport et preuves) et `RESUME_PROJET.md` ne sont pas encore commités.
+- Les dossiers `TP4_Architecture/` (TP4 + TP6 + interface TP7), `TP6_API/`, `TP7_Frontend/`, `TP8_Tests/`, `outils/` et `RESUME_PROJET.md` ne sont pas encore commités.
 - Le dossier `TP6/` est le travail d'un autre groupe, ajouté comme modèle : il n'est pas modifié.
 - Le fichier `.env` local est ignoré par Git (vérifié).
 - Le serveur de test PHP a été arrêté ; aucune donnée réelle n'est utilisée.
 
 ---
 
-## 10. Reste à faire
+## 12. Reste à faire
 
 | TP | Contenu |
 |---|---|
-| TP5 | Formaliser les branches, le Kanban et les revues ; commiter TP4 et TP6. |
-| TP7 | Interface et intégration : parcours étudiant et responsable, formulaires accessibles, `fetch`, affichage avec `textContent`. |
-| TP8 | Plan de tests complet et audit de sécurité (XSS, injections, sessions). |
-| TP9 | Déploiement local et sauvegarde/restauration. |
+| TP5 | Formaliser les branches, le Kanban et les revues ; commiter TP4, TP6, TP7 et TP8. |
+| TP9 | Déploiement local, compte SQL dédié et sauvegarde/restauration. |
 | TP10 | Préparation de la soutenance et démonstration. |
 
 ---
 
-## 11. Commandes utiles
+## 13. Commandes utiles
 
 ```bash
 # Base de données (jeu d'essai TP3)
@@ -339,6 +463,15 @@ php tests/test_domain.php
 # Livrable TP6 (rejeu + rapport)
 cd ../TP6_API
 ./tests_api.sh              # recharge la base, démarre l'API sur 8082, rejoue 14 cas
+python3 build_rapport.py    # HTML, PDF (Chrome), DOCX (LibreOffice/UNO)
+
+# Interface TP7
+cd ../TP4_Architecture
+php -S 127.0.0.1:8084 -t public public/index.php   # puis http://127.0.0.1:8084/
+
+# Livrable TP8 (matrice + audit)
+cd ../TP8_Tests
+./tests_securite.sh         # recharge la base, démarre l'API sur 8086, rejoue 14 tests
 python3 build_rapport.py    # HTML, PDF (Chrome), DOCX (LibreOffice/UNO)
 ```
 

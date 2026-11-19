@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>TP7 — Interface des demandes de stage</title>
+<style>
+  @page { size: A4; margin: 15mm 15mm 13mm 15mm; }
+  body { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8.7pt; line-height: 1.26; color: #000; margin: 0; }
+  .tete { text-align: center; margin-bottom: 6pt; }
+  .tete .petit, .tete .date, .tete .groupe { font-size: 7.8pt; }
+  .tete h1 { font-size: 15pt; margin: 2pt 0; font-family: Georgia, serif; font-weight: normal; }
+  h2 { font-size: 9.8pt; margin: 8pt 0 3pt; page-break-after: avoid; }
+  h2.saut-page { page-break-before: always; margin-top: 0; }
+  p { margin: 0 0 3.5pt; text-align: justify; }
+  .note { font-size: 7.2pt; font-style: italic; color: #333; }
+  code { font-family: "Liberation Mono", monospace; font-size: 7.3pt; }
+  td.mono { font-family: "Liberation Mono", monospace; font-size: 6.2pt; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 7.3pt; margin: 1pt 0 4pt; }
+  th, td { border: 0.4pt solid #555; padding: 2pt 2.5pt; vertical-align: top; text-align: left;
+           word-wrap: break-word; overflow-wrap: break-word; }
+  th { font-weight: bold; background: #f0f0f0; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  td.c { text-align: center; }
+  td.gras { font-weight: bold; }
+  ul { margin: 1pt 0 4pt 14pt; padding: 0; }
+  li { margin-bottom: 1.2pt; }
+  footer { margin-top: 6pt; font-size: 7pt; color: #333; text-align: center; }
+</style></head><body>
+<div class="tete">
+  <div class="petit">Projet informatique 2 — L3 SIL</div>
+  <h1>Interface de gestion des demandes de stage</h1>
+  <div class="date">TP7 — Interface et intégration — 19 novembre 2026</div>
+  <div class="groupe">Groupe : OUSSOU Hermax – TCHEGNON Loïk – KANHONOU Ashley<br>
+  Encadreur : MAMA Tairou · Données fictives du TP3</div>
+</div>
+
+<h2>1. Objet</h2>
+<p>Relier une interface Web accessible à l'API des demandes. L'interface est servie par la
+même application que l'API, dans <code>TP4_Architecture/public/</code> : même origine, donc
+même cookie de session, sans duplication ni configuration CORS. Six écrans couvrent deux
+rôles : l'étudiante dépose et suit ses conventions, le responsable recherche, filtre et
+instruit les dossiers avant de valider ou refuser avec motif. Toutes les écritures passent
+par <code>fetch</code> ; aucun rendu n'utilise <code>innerHTML</code>.</p>
+
+<h2>2. Parcours des deux rôles</h2>
+<table>
+  <colgroup><col style="width:17%"><col style="width:38%"><col style="width:45%"></colgroup>
+  <thead><tr><th>Rôle</th><th>Écrans</th><th>Actions et échanges</th></tr></thead>
+  <tbody>
+    <tr><td class="gras">Étudiante</td>
+        <td>Connexion → Mes demandes → Nouvelle convention → Détail</td>
+        <td>Saisir entreprise, intitulé et deux dates ; soumettre la convention ; lire le statut,
+            la date de décision ou le motif de refus. Une convention SOUMISE part vers le responsable.</td></tr>
+    <tr><td class="gras">Responsable</td>
+        <td>Connexion → Dossiers à traiter → Décision → Détail</td>
+        <td>Rechercher et filtrer par statut ; valider, ou refuser avec un motif obligatoire ;
+            la décision revient dans le détail de l'étudiante et reste conservée.</td></tr>
+  </tbody>
+</table>
+<p style="text-align:center;margin:3pt 0 2pt;">
+  <img src="parcours.png" alt="Parcours des deux rôles : étudiante et responsable"
+       style="width:140mm;height:70mm;"></p>
+<p class="note" style="text-align:center;">Figure 1 — Parcours des deux rôles : écrans, actions
+et échanges (source : <code>parcours.svg</code>).</p>
+
+<h2>3. Formulaire accessible</h2>
+<table>
+  <colgroup><col style="width:18%"><col style="width:82%"></colgroup>
+  <thead><tr><th>Point</th><th>Mise en œuvre</th></tr></thead>
+  <tbody>
+<tr><td class="gras">Étiquettes liées</td><td>Chaque champ a un label for=… et un id unique (email, mot-de-passe, entreprise, intitule, date-debut, date-fin, motif).</td></tr>
+<tr><td class="gras">Aide et erreurs</td><td>aria-describedby relie le champ à son texte d&#x27;aide et à sa zone d&#x27;erreur ; aria-invalid=true sur le champ fautif.</td></tr>
+<tr><td class="gras">Zone d&#x27;erreur</td><td>Zone globale role=alert + aria-live=assertive ; une zone id=erreur-… par champ.</td></tr>
+<tr><td class="gras">Messages de réussite</td><td>role=status : annonce polie, sans interrompre la saisie.</td></tr>
+<tr><td class="gras">Décision</td><td>Écran dédié sans dialogue : un refus sans motif est bloqué, le message s&#x27;affiche sous la zone de texte et le focus y est placé.</td></tr>
+<tr><td class="gras">Clavier</td><td>Lien d&#x27;évitement, focus-visible sur tous les contrôles, navigation par boutons entre les six écrans.</td></tr>
+<tr><td class="gras">Couleur</td><td>Statut écrit en toutes lettres ; la couleur ne fait que renforcer.</td></tr>
+<tr><td class="gras">Structure et langue</td><td>Un seul h1 par écran, sections h2, tableaux avec caption et th scope=col ; lang=fr, dates JJ/MM/AAAA.</td></tr>
+  </tbody>
+</table>
+<p class="note">Les formulaires portent <code>novalidate</code> : la validation est faite par
+le serveur et les messages affichés sont ceux de l'API, ce qui permet de montrer les erreurs
+422 réelles plutôt que les bulles du navigateur.</p>
+
+<h2 class="saut-page">4. Gestion lisible des erreurs</h2>
+<table>
+  <colgroup><col style="width:8%"><col style="width:30%"><col style="width:62%"></colgroup>
+  <thead><tr><th>Code</th><th>Déclencheur</th><th>Affichage pour l'utilisateur</th></tr></thead>
+  <tbody>
+<tr><td class="c">400</td><td>Corps JSON illisible</td><td>« Le corps de la requête doit être un objet JSON valide. »</td></tr>
+<tr><td class="c">401</td><td>Session absente ou expirée</td><td>« Authentification requise. » puis retour à la connexion ; « E-mail ou mot de passe incorrect. » à la connexion</td></tr>
+<tr><td class="c">403</td><td>Rôle ou propriétaire incorrect</td><td>« Vous n&#x27;avez pas les droits pour cette action. »</td></tr>
+<tr><td class="c">404</td><td>Convention inconnue</td><td>« Cette ressource est introuvable. »</td></tr>
+<tr><td class="c">405</td><td>Méthode non autorisée</td><td>« Cette action n&#x27;est pas autorisée sur cette ressource. »</td></tr>
+<tr><td class="c">409</td><td>Décision déjà prise</td><td>« Cette décision n&#x27;est plus possible… »</td></tr>
+<tr><td class="c">422</td><td>Validation serveur</td><td>Message global + message sous chaque champ concerné</td></tr>
+<tr><td class="c">500</td><td>Panne interne</td><td>« Une erreur interne est survenue. Réessayez dans un instant. »</td></tr>
+<tr><td class="c">503</td><td>Base indisponible</td><td>Badge « Service indisponible » et message dans la zone d&#x27;état</td></tr>
+  </tbody>
+</table>
+<p class="note"><code>assets/api.js</code> traduit le statut et le corps JSON en titre + liste
+de détails ; le message du serveur est préféré quand il existe. Preuve :
+<code>preuves/12_erreurs_400_401_500.png</code> et <code>03_erreurs_422.png</code>.</p>
+
+<h2>5. Rendu sécurisé avec textContent</h2>
+<p>Chaque valeur reçue de l'API est insérée dans un nœud créé par
+<code>document.createElement</code> puis affectée à <code>textContent</code> ; le fichier
+<code>assets/rendu.js</code> ne contient aucun <code>innerHTML</code>. Deux charges hostiles
+ont été envoyées : <code>&lt;img src=x onerror=…&gt;</code> et
+<code>&lt;script&gt;document.body.dataset.xss=…&lt;/script&gt;</code>. Résultat mesuré sur
+<code>/preuves/xss.html</code> : attribut <code>data-xss</code> absent,
+0 élément(s) <code>img</code> créé(s), 0 élément(s)
+<code>script</code> dans le tableau. Les balises apparaissent en texte dans le tableau de
+l'étudiante, l'écran de détail et les cartes du responsable. Détail : <code>preuves/xss_verification.txt</code>
+et DOM complet <code>preuves/xss_dom.html</code>.</p>
+
+<h2>6. Scénario de bout en bout</h2>
+<table>
+  <colgroup><col style="width:5%"><col style="width:26%"><col style="width:30%"><col style="width:21%"><col style="width:18%"></colgroup>
+  <thead><tr><th>#</th><th>Action</th><th>Attendu</th><th>Observé</th><th>Preuve</th></tr></thead>
+  <tbody>
+<tr><td class="c">1</td><td>Ouvrir l&#x27;application</td><td>Écran de connexion, badge « Service actif »</td><td>Conforme</td><td class="mono">01_connexion.png</td></tr>
+<tr><td class="c">2</td><td>Connexion étudiante A</td><td>« Mes demandes », 2 conventions du jeu d&#x27;essai</td><td>« Bienvenue Sènami. », compteurs 1/0/0</td><td class="mono">02_etudiante.png</td></tr>
+<tr><td class="c">3</td><td>Soumettre le formulaire vide</td><td>422, message global et un message par champ</td><td>« Données invalides. », 4 champs</td><td class="mono">03_erreurs_422.png</td></tr>
+<tr><td class="c">4</td><td>Déposer un intitulé contenant une balise</td><td>201, statut En attente, balise affichée en texte</td><td>« Convention n° 7 enregistrée au statut En attente. »</td><td class="mono">04_demande_creee.png</td></tr>
+<tr><td class="c">5</td><td>Recharger la page (F5)</td><td>Session conservée, convention 7 présente</td><td>3 lignes, aucune exécution</td><td class="mono">05_persistance.png</td></tr>
+<tr><td class="c">6</td><td>Cliquer « Consulter » sur la convention 7</td><td>Écran de détail, balise toujours en texte</td><td>« Convention n° 7 », statut En attente</td><td class="mono">06_detail.png</td></tr>
+<tr><td class="c">7</td><td>Connexion responsable</td><td>« Dossiers à traiter », 7 dossiers</td><td>2 en attente, filtres et recherche</td><td class="mono">07_responsable.png</td></tr>
+<tr><td class="c">8</td><td>Cliquer « Décider » sur la convention 2</td><td>Écran de décision, résumé et zone de motif</td><td>Conforme</td><td class="mono">08_decision.png</td></tr>
+<tr><td class="c">9</td><td>Refuser sans motif</td><td>Message sous le champ, aucun appel réseau</td><td>« Le motif doit contenir de 3 à 255 caractères. »</td><td class="mono">09_refus_motif.png</td></tr>
+<tr><td class="c">10</td><td>Saisir un motif puis refuser</td><td>200, statut Refusée, motif conservé</td><td>« Convention n° 2 : refusée. », 1 en attente</td><td class="mono">10_refus_enregistre.png</td></tr>
+<tr><td class="c">11</td><td>Cliquer « Décider » sur la convention 7 puis valider</td><td>200, statut Validée</td><td>« Convention n° 7 : validée. », 0 en attente</td><td class="mono">11_validation.png</td></tr>
+<tr><td class="c">12</td><td>Ouvrir la page de preuve des erreurs</td><td>400, 401 et 500 rendus par le composant commun</td><td>Conforme</td><td class="mono">12_erreurs_400_401_500.png</td></tr>
+<tr><td class="c">13</td><td>Ouvrir la page de preuve XSS</td><td>Deux charges en texte, aucune balise interprétée</td><td>data-xss absent, 0 img, 0 script</td><td class="mono">13_xss.png</td></tr>
+  </tbody>
+</table>
+<p class="note">Scénario complet, protocole et commandes de rejeu : <code>scenario.md</code>.
+Après l'étape 11, la base contient 7 conventions : la 7 est VALIDEE, la 2 est REFUSEE
+avec le motif « Période incompatible avec le calendrier de la filière ».</p>
+
+<h2>7. Preuves et reproductibilité</h2>
+<ul>
+  <li>13 captures d'écran réelles dans <code>preuves/</code>, de la connexion au test XSS.</li>
+  <li><code>preuves/xss_verification.txt</code> : contrôle chiffré du rendu ; <code>xss_dom.html</code> : DOM produit par Chrome.</li>
+  <li>Interface : <code>public/index.html</code>, <code>assets/app.css</code>, <code>api.js</code>, <code>rendu.js</code>, <code>app.js</code>.</li>
+  <li>Rejouer : <code>cd TP4_Architecture &amp;&amp; php -S 127.0.0.1:8084 -t public public/index.php</code>, puis ouvrir <code>http://127.0.0.1:8084/</code>.</li>
+  <li>Comptes : <code>sena.houngbo@univ.test</code> et <code>responsable.pedago@univ.test</code>, mot de passe <code>Demo1234!</code>.</li>
+</ul>
+
+<footer>Projet informatique 2 — L3 SIL — Interface des demandes de stage (TP7) — 19/11/2026</footer>
+
+</body></html>

@@ -1,0 +1,9 @@
+email	role	empreinte	longueur	bcrypt
+sena.houngbo@univ.test	ETUDIANT	$2y$10$…	60	OUI
+ibrahim.sanni@univ.test	ETUDIANT	$2y$10$…	60	OUI
+grace.amegan@univ.test	ETUDIANT	$2y$10$…	60	OUI
+sylvain.kiki@univ.test	ENCADREUR	$2y$10$…	60	OUI
+mireille.zinsou@univ.test	ENCADREUR	$2y$10$…	60	OUI
+responsable.pedago@univ.test	RESPONSABLE	$2y$10$…	60	OUI
+admin.siege@univ.test	ADMIN	$2y$10$…	60	OUI
+dev.equipe@univ.test	DEVELOPPEUR	$2y$10$…	60	OUI

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preuve XSS — rendu par textContent</title>
+  <link rel="stylesheet" href="../assets/app.css">
+  <script src="../assets/rendu.js" defer=""></script>
+  <script src="xss.js" defer=""></script>
+</head>
+<body>
+  <main>
+    <section class="panel" style="max-width:1100px;margin:0 auto">
+      <p class="eyebrow">TP7 — preuve de rendu sécurisé</p>
+      <h1>Balises HTML injectées dans les données</h1>
+      <p class="muted">
+        Les deux valeurs ci-dessous viennent d’une demande créée par l’API. Elles
+        contiennent des balises HTML. Le tableau est construit avec
+        <code>textContent</code> : le navigateur doit afficher le texte, sans créer
+        d’élément ni exécuter de script.
+      </p>
+
+      <p class="notice notice-success" id="verdict" role="status">Aucune exécution : les balises sont affichées comme du texte.</p>
+
+      <div class="table-shell">
+        <table>
+          <caption class="sr-only">Rendu des valeurs piégées</caption>
+          <thead>
+            <tr><th scope="col">Intitulé du stage</th><th scope="col">Entreprise</th>
+                <th scope="col">Période</th><th scope="col">Statut</th>
+                <th scope="col">Action</th></tr>
+          </thead>
+          <tbody id="corps"><tr><td><strong>&lt;img src=x onerror="document.body.dataset.xss='image'"&gt;</strong></td><td>&lt;script&gt;document.body.dataset.xss="script"&lt;/script&gt;</td><td class="nowrap">01/02/2027 – 31/05/2027</td><td><span class="status-tag status-soumise">En attente</span></td><td><button type="button" class="link-button" data-action="detail" data-id="999">Consulter</button></td></tr></tbody>
+        </table>
+      </div>
+
+      <p class="field-hint">
+        Preuve attendue : aucun attribut <code>data-xss</code> sur
+        <code>&lt;body&gt;</code>, et les balises apparaissent en texte dans le tableau.
+      </p>
+    </section>
+  </main>
+
+
+</body></html>

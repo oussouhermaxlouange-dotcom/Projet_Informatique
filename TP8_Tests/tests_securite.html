@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>TP8 — Plan de tests et audit de sécurité</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 12mm 14mm; }
+  body { font-family: "Liberation Sans", Arial, sans-serif; font-size: 8.3pt; line-height: 1.24; color: #000; margin: 0; }
+  .tete { text-align: center; margin-bottom: 5pt; }
+  .tete .petit, .tete .date, .tete .groupe { font-size: 7.6pt; }
+  .tete h1 { font-size: 14.5pt; margin: 2pt 0; font-family: Georgia, serif; font-weight: normal; }
+  h2 { font-size: 9.4pt; margin: 7pt 0 2.5pt; page-break-after: avoid; }
+  h2.saut-page { page-break-before: always; margin-top: 0; }
+  p { margin: 0 0 3pt; text-align: justify; }
+  .note { font-size: 6.9pt; font-style: italic; color: #333; }
+  code, .mono { font-family: "Liberation Mono", monospace; font-size: 6.9pt; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 6.9pt; margin: 1pt 0 3pt; }
+  th, td { border: 0.4pt solid #555; padding: 1.6pt 2.2pt; vertical-align: top; text-align: left;
+           word-wrap: break-word; overflow-wrap: break-word; }
+  th { font-weight: bold; background: #f0f0f0; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  td.c { text-align: center; }
+  td.gras { font-weight: bold; }
+  footer { margin-top: 5pt; font-size: 6.8pt; color: #333; text-align: center; }
+</style></head><body>
+<div class="tete">
+  <div class="petit">Projet informatique 2 — L3 SIL</div>
+  <h1>Plan de tests et audit de sécurité</h1>
+  <div class="date">TP8 — Tests et sécurité — 18 novembre 2026</div>
+  <div class="groupe">Groupe : OUSSOU Hermax – TCHEGNON Loïk – KANHONOU Ashley<br>
+  Encadreur : MAMA Tairou · MySQL 8.0.46 · API réelle · données fictives</div>
+</div>
+
+<h2>1. Objet et méthode</h2>
+<p>Vérifier l'application par une matrice de tests et des contrôles de sécurité. Les 14
+cas ont été écrits <strong>avant</strong> exécution : l'attendu et le code HTTP attendu sont des
+paramètres du script <code>tests_securite.sh</code>, qui recharge la base TP3, démarre l'API
+sur le port 8086 et compare le code obtenu à l'attendu. Deux cas relisent en plus le statut en
+base (refus sans motif, validation répétée) et un cas compare le nombre de lignes avant et
+après une création invalide. Résultat : <strong>14 / 14 conformes</strong>.</p>
+
+<h2>2. Matrice de tests (14 lignes)</h2>
+<table>
+  <colgroup><col style="width:6%"><col style="width:7%"><col style="width:29%"><col style="width:29%"><col style="width:12%"><col style="width:8%"><col style="width:9%"></colgroup>
+  <thead><tr><th>Test</th><th>Exig.</th><th>Cas</th><th>Données</th><th>Attendu</th><th>Observé</th><th>Conforme</th></tr></thead>
+  <tbody>
+<tr><td class="c">T-01</td><td class="c">EF-03</td><td>Valider une demande inexistante (999)</td><td>PATCH /demandes/999/statut, session responsable</td><td class="c">404</td><td class="c">404</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-02</td><td class="c">EF-03</td><td>Refuser sans motif (demande 2)</td><td>PATCH /demandes/2/statut, statut REFUSEE, sans motif</td><td class="c">422, statut inchangé</td><td class="c">422</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-03</td><td class="c">EF-03</td><td>Valider une demande déjà validée (3)</td><td>PATCH /demandes/3/statut sur une demande VALIDEE</td><td class="c">409, statut inchangé</td><td class="c">409</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-04</td><td class="c">EF-02</td><td>Créer une demande datée du 30 février</td><td>POST /demandes, date_debut = 2027-02-30</td><td class="c">422</td><td class="c">422</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-05</td><td class="c">ENF-01</td><td>Étudiante B lit la demande 1 (étudiante A)</td><td>Session B, GET /demandes/1 (dossier de A)</td><td class="c">403 sans donnée</td><td class="c">403</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-06</td><td class="c">ENF-01</td><td>Identifiant « 1 OR 1=1 »</td><td>GET /demandes/1%20OR%201=1, session responsable</td><td class="c">404, aucune ligne</td><td class="c">404</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-07</td><td class="c">ENF-01</td><td>Lister les demandes sans session</td><td>GET /demandes sans cookie de session</td><td class="c">401</td><td class="c">401</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-08</td><td class="c">ENF-01</td><td>Étudiante A tente de valider la demande 2</td><td>Session A, PATCH /demandes/2/statut, VALIDEE</td><td class="c">403</td><td class="c">403</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-09</td><td class="c">ENF-01</td><td>Connexion, e-mail « &#x27; OR &#x27;1&#x27;=&#x27;1 »</td><td>POST /connexion, email = &#x27; OR &#x27;1&#x27;=&#x27;1</td><td class="c">422, jamais atteint SQL</td><td class="c">422</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-09b</td><td class="c">ENF-01</td><td>Connexion, mot de passe « &#x27; OR &#x27;1&#x27;=&#x27;1 »</td><td>POST /connexion, mot de passe = &#x27; OR &#x27;1&#x27;=&#x27;1</td><td class="c">401</td><td class="c">401</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-10</td><td class="c">ENF-01</td><td>Écriture depuis une origine étrangère</td><td>POST /connexion avec Origin: http://evil.test</td><td class="c">403</td><td class="c">403</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-11</td><td class="c">ENF-02</td><td>Créer un intitulé contenant &lt;script&gt;</td><td>POST /demandes, intitule = &lt;script&gt;alert(1)&lt;/script&gt;</td><td class="c">201, stocké tel quel</td><td class="c">201</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-12</td><td class="c">ENF-02</td><td>Création invalide : intitulé vide</td><td>POST /demandes, intitule = espaces</td><td class="c">422, base inchangée</td><td class="c">422</td><td class="c">OUI</td></tr>
+<tr><td class="c">T-13</td><td class="c">ENF-01</td><td>Mots de passe hachés en base (bcrypt)</td><td>SELECT mot_de_passe_hash FROM utilisateur</td><td class="c">8/8 empreintes $2y$, 0 en clair</td><td class="c">8/8</td><td class="c">OUI</td></tr>
+  </tbody>
+</table>
+<p class="note">Matrice détaillée, avec la réponse JSON complète de chaque cas :
+<code>matrice_tests.md</code> et <code>preuves/sorties.tsv</code>.</p>
+
+<h2>3. Les quatre cas limites exigés</h2>
+<table>
+  <colgroup><col style="width:18%"><col style="width:6%"><col style="width:17%"><col style="width:59%"></colgroup>
+  <thead><tr><th>Cas limite</th><th>Test</th><th>Réponse</th><th>Ce que le test prouve</th></tr></thead>
+  <tbody>
+<tr><td class="gras">Demande inexistante</td><td class="c">T-01</td><td class="c">404</td><td>Aucun accès à une ressource absente, aucune création implicite.</td></tr>
+<tr><td class="gras">Refus sans motif</td><td class="c">T-02</td><td class="c">422 + statut inchangé</td><td>La règle « motif obligatoire » est portée par le serveur ; l&#x27;absence d&#x27;écriture est relue en base.</td></tr>
+<tr><td class="gras">Validation répétée</td><td class="c">T-03</td><td class="c">409 + statut inchangé</td><td>VALIDEE et REFUSEE sont terminales ; la table des transitions fait foi.</td></tr>
+<tr><td class="gras">Date invalide</td><td class="c">T-04</td><td class="c">422</td><td>Le 30 février est refusé par le serveur, pas seulement par le champ type=date.</td></tr>
+  </tbody>
+</table>
+
+<h2>4. Autorisation et injection</h2>
+<p><strong>Étudiante B vers le dossier de A (T-05)</strong> : la session de B est valide et la
+demande 1 existe ; la réponse est pourtant <code>403 ACCES_REFUSE</code>, sans corps utile. Le
+contrôle est fait dans <code>DemandeService</code> sur <code>etudiant_utilisateur_id</code>.
+<strong>Étudiante A qui tente de décider (T-08)</strong> : <code>403 ROLE_NON_AUTORISE</code> ;
+le rôle est vérifié côté serveur à chaque requête, jamais à partir d'un paramètre client.</p>
+<p><strong>Chaîne « 1 OR 1=1 » (T-06, T-09, T-09b)</strong> : comme identifiant de route, elle
+est rejetée par <code>ctype_digit()</code> avant tout appel au dépôt (<code>404</code>) ; dans le
+champ e-mail, par <code>FILTER_VALIDATE_EMAIL</code> (<code>422</code>) ; dans le mot de passe,
+par l'échec de <code>password_verify()</code> (<code>401</code>). Aucun de ces chemins ne
+construit de SQL par concaténation : requêtes préparées avec
+<code>PDO::ATTR_EMULATE_PREPARES = false</code>.</p>
+
+<h2 class="saut-page">5. Mots de passe et protection CSRF</h2>
+<p>Les 8 comptes du jeu d'essai portent une empreinte bcrypt de 60 caractères
+(8/8 conformes, 0 mot de passe en clair). La vérification utilise
+<code>password_verify()</code> et une empreinte factice égalise le temps de réponse entre
+compte inconnu et mot de passe faux.</p>
+<table>
+  <colgroup><col style="width:34%"><col style="width:16%"><col style="width:28%"><col style="width:9%"><col style="width:13%"></colgroup>
+  <thead><tr><th>Compte</th><th>Rôle</th><th>Empreinte</th><th>Long.</th><th>bcrypt</th></tr></thead>
+  <tbody>
+<tr><td class="mono">sena.houngbo@univ.test</td><td class="c">ETUDIANT</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">ibrahim.sanni@univ.test</td><td class="c">ETUDIANT</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">grace.amegan@univ.test</td><td class="c">ETUDIANT</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">sylvain.kiki@univ.test</td><td class="c">ENCADREUR</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">mireille.zinsou@univ.test</td><td class="c">ENCADREUR</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">responsable.pedago@univ.test</td><td class="c">RESPONSABLE</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">admin.siege@univ.test</td><td class="c">ADMIN</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+<tr><td class="mono">dev.equipe@univ.test</td><td class="c">DEVELOPPEUR</td><td class="mono">$2y$10$……</td><td class="c">60</td><td class="c">OUI</td></tr>
+  </tbody>
+</table>
+<p><strong>CSRF retenu</strong> : cookie de session <code>SameSite=Lax</code>, API JSON sans
+CORS, et contrôle explicite de l'en-tête <code>Origin</code> sur POST, PATCH, PUT et DELETE
+(<code>src/Support/Csrf.php</code>). Une écriture venue d'un autre site reçoit
+<code>403 ORIGINE_REFUSEE</code> avant le routeur. Un client sans navigateur (curl) n'envoie pas
+<code>Origin</code> : il reste soumis à l'authentification par session. Le jeton de session par
+formulaire n'a pas été ajouté pour ne pas modifier le contrat du TP6 ; il est consigné en dette
+technique.</p>
+
+<h2>6. Revue de code (4 remarques classées)</h2>
+<table>
+  <colgroup><col style="width:6%"><col style="width:39%"><col style="width:9%"><col style="width:46%"></colgroup>
+  <thead><tr><th>Réf.</th><th>Constat</th><th>Niveau</th><th>État et correctif</th></tr></thead>
+  <tbody>
+<tr><td class="c">R-01</td><td>Identifiant de route converti par (int) : « 12abc » devenait 12, « 1 OR 1=1 » devenait 1.</td><td class="c">Bloquante</td><td>Corrigée : ctype_digit + &gt; 0, sinon 404 avant le dépôt. Testée T-06.</td></tr>
+<tr><td class="c">R-02</td><td>CSRF implicite : SameSite=Lax seul, sans contrôle explicite de l&#x27;origine.</td><td class="c">Majeure</td><td>Corrigée : Csrf.php refuse toute écriture d&#x27;une autre origine (403 ORIGINE_REFUSEE). Testée T-10.</td></tr>
+<tr><td class="c">R-03</td><td>Formulaire de refus sans novalidate : la validation native masquait le message maison.</td><td class="c">Mineure</td><td>Corrigée : novalidate ; message affiché sous le champ. Testée au scénario TP7.</td></tr>
+<tr><td class="c">R-04</td><td>Aucune limitation des tentatives de connexion (bruteforce possible).</td><td class="c">Majeure</td><td>Acceptée et planifiée : compteur 5 essais / 15 min, réponse 429 avant mise en ligne.</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Recette et conclusion</h2>
+<table>
+  <colgroup><col style="width:52%"><col style="width:32%"><col style="width:16%"></colgroup>
+  <thead><tr><th>Scénario</th><th>Exigences couvertes</th><th>Verdict</th></tr></thead>
+  <tbody>
+<tr><td>S1 — Connexion et dépôt</td><td class="c">EF-01, EF-02, EF-06</td><td class="c">Conforme</td></tr>
+<tr><td>S2 — Erreurs lisibles</td><td class="c">EF-02, ENF-02</td><td class="c">Conforme</td></tr>
+<tr><td>S3 — Validation</td><td class="c">EF-03, ENF-01</td><td class="c">Conforme</td></tr>
+<tr><td>S4 — Refus motivé</td><td class="c">EF-03</td><td class="c">Conforme</td></tr>
+<tr><td>S5 — Autorisations et injection</td><td class="c">ENF-01, ENF-02</td><td class="c">Conforme</td></tr>
+  </tbody>
+</table>
+<p>Les 5 scénarios de recette sont conformes et les 14 tests automatisés le sont aussi.
+Deux remarques de revue ont été corrigées et sont couvertes par la matrice (T-06, T-10) ; une
+troisième l'est par le scénario TP7 ; la quatrième (limitation des tentatives) est acceptée en
+local et planifiée avant toute mise en ligne. Aucune réserve ne bloque la réception.</p>
+<p class="note">Détail : <code>revue_code.md</code> (remarques et dette), <code>recette.md</code>
+(procès-verbal et signatures), <code>preuves/resume.txt</code> (synthèse).</p>
+
+<footer>Projet informatique 2 — L3 SIL — Plan de tests et audit de sécurité (TP8) — 18/11/2026</footer>
+
+</body></html>

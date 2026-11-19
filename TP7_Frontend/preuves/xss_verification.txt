@@ -1,0 +1,12 @@
+TP7 — vérification du rendu sécurisé (textContent)
+Page testée : /preuves/xss.html (mêmes composants que l'application)
+Charges : <img src=x onerror=...> et <script>document.body.dataset.xss=...</script>
+
+Attribut <body> : <body>
+Attribut data-xss sur <body> : absent
+Éléments <img> créés dans le document : 0
+Éléments <script> dans le tableau rendu : 0
+Verdict affiché par la page : oui
+
+Résultat : les deux charges apparaissent en texte ; aucune balise n'est interprétée.
+Preuve DOM complète : preuves/xss_dom.html

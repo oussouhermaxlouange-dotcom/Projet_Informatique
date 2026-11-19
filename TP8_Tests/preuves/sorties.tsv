@@ -1,0 +1,15 @@
+test	exigence	cas	attendu	requete	obtenu	conforme	reponse
+T-01	EF-03	Valider une demande inexistante (999)	404	PATCH /api/demandes/999/statut	404	OUI	{"erreur":{"code":"DEMANDE_INCONNUE","message":"Demande inconnue."}}
+T-02	EF-03	Refuser sans motif (demande 2)	422, statut inchangé	PATCH /api/demandes/2/statut	422	OUI	{"erreur":{"code":"VALIDATION","message":"Un refus exige un motif de 3 à 255 caractères.","details":{"motif":"Motif obligatoire et limité à 255 caractères."}}}
+T-03	EF-03	Valider une demande déjà validée (3)	409, statut inchangé	PATCH /api/demandes/3/statut	409	OUI	{"erreur":{"code":"TRANSITION_INTERDITE","message":"Transition VALIDEE vers VALIDEE interdite.","details":{"statut_actuel":"VALIDEE","statut_demande":"VALIDEE","transitions_possibles":[]}}}
+T-04	EF-02	Créer une demande datée du 30 février	422	POST /api/demandes	422	OUI	{"erreur":{"code":"VALIDATION","message":"Données invalides.","details":{"date_debut":"Date de début au format AAAA-MM-JJ."}}}
+T-05	ENF-01	Étudiante B lit la demande 1 (étudiante A)	403 sans donnée	GET /api/demandes/1	403	OUI	{"erreur":{"code":"ACCES_REFUSE","message":"Cette demande appartient à un autre étudiant."}}
+T-06	ENF-01	Identifiant « 1 OR 1=1 »	404, aucune ligne	GET /api/demandes/1%20OR%201=1	404	OUI	{"erreur":{"code":"DEMANDE_INCONNUE","message":"Demande inconnue."}}
+T-07	ENF-01	Lister les demandes sans session	401	GET /api/demandes	401	OUI	{"erreur":{"code":"NON_AUTHENTIFIE","message":"Authentification requise."}}
+T-08	ENF-01	Étudiante A tente de valider la demande 2	403	PATCH /api/demandes/2/statut	403	OUI	{"erreur":{"code":"ROLE_NON_AUTORISE","message":"Seul le responsable pédagogique peut décider d’une demande."}}
+T-09	ENF-01	Connexion, e-mail « ' OR '1'='1 »	422, jamais atteint SQL	POST /api/connexion	422	OUI	{"erreur":{"code":"VALIDATION","message":"Identifiants incomplets.","details":{"email":"Adresse e-mail invalide."}}}
+T-09b	ENF-01	Connexion, mot de passe « ' OR '1'='1 »	401	POST /api/connexion	401	OUI	{"erreur":{"code":"IDENTIFIANTS_INVALIDES","message":"E-mail ou mot de passe incorrect."}}
+T-10	ENF-01	Écriture depuis une origine étrangère	403	POST /api/connexion (Origin: http://evil.test)	403	OUI	{"erreur":{"code":"ORIGINE_REFUSEE","message":"Requête refusée : cette origine n’est pas celle de l’application."}}
+T-11	ENF-02	Créer un intitulé contenant <script>	201, stocké tel quel	POST /api/demandes	201	OUI	{"demande":{"id":7,"etudiant_id":1,"entreprise_id":1,"encadreur_id":null,"intitule":"<script>alert(1)</script>","statut":"SOUMISE","motif_refus":null,"date_depot":"2026-11-19 13:25:44","date_decision":null,"date_debut":"2027-03-01","date_fin":"2027-06-30","etudiant_utilisateur_id":1,"etudiant":"Sènami HOUNGBO","entreprise":"Studio Kora"}}
+T-12	ENF-02	Création invalide : intitulé vide	422, base inchangée	POST /api/demandes	422	OUI	{"erreur":{"code":"VALIDATION","message":"Données invalides.","details":{"intitule":"Intitulé de 5 à 120 caractères obligatoire."}}}
+T-13	ENF-01	Mots de passe hachés en base (bcrypt)	8/8 empreintes $2y$, 0 en clair	SELECT … FROM utilisateur	8/8	OUI	clair: 0 ; détail: preuves/hachages.tsv
