@@ -1,0 +1,49 @@
+TP9 — restauration vérifiée sur une base de test
+Date : 2026-11-20T09:35:28+01:00
+
+1. Base de test créée : tp3_conventions_restauration
+2. Import de la sauvegarde
+$ mysql -u root --socket=/tmp/opencode/mysql_tp9/run/mysql.sock tp3_conventions_restauration < preuves/tp3_conventions.sql
+code de sortie : 0
+
+3. Comparaison des comptages
+table            source   restauré verdict
+---------------- -------- -------- -------
+utilisateur      8        8        OK
+etudiant         3        3        OK
+encadreur        2        2        OK
+entreprise       2        2        OK
+salle            3        3        OK
+convention       6        6        OK
+disponibilite    4        4        OK
+soutenance       2        2        OK
+historique       9        9        OK
+
+Résultat : 9/9 tables identiques.
+
+4. Test de perte : suppression de la table historique dans la base de test
+historique après suppression : table absente
+
+5. Restauration complète et nouveau comptage
+table            source   restauré verdict
+---------------- -------- -------- -------
+utilisateur      8        8        OK
+etudiant         3        3        OK
+encadreur        2        2        OK
+entreprise       2        2        OK
+salle            3        3        OK
+convention       6        6        OK
+disponibilite    4        4        OK
+soutenance       2        2        OK
+historique       9        9        OK
+
+Résultat final : 9/9 tables identiques après restauration.
+
+6. Contrôle des données fictives
+id	statut	intitule
+1	BROUILLON	Application de suivi des tournées de collecte
+2	SOUMISE	Tableau de bord des indicateurs territoriaux
+3	VALIDEE	Refonte du portail documentaire
+4	VALIDEE	Automatisation des rapports de collecte
+5	REFUSEE	Maintenance du réseau de capteurs
+6	VALIDEE	Entrepôt de données des conventions

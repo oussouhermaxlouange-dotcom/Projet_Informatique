@@ -1,0 +1,47 @@
+TP9 — ticket d'incident : reproduction
+Date : 2026-11-20T09:32:01+01:00
+Poste : copie isolée /tmp/opencode/tp9_incident
+
+Configuration fautive :
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=tp3_conventions
+DB_USER=tp9_app
+DB_PASSWORD=Tp9Demo!2026
+DB_SOCKET=/tmp/mysql-tp3-oussou.sock
+
+$ curl -i http://127.0.0.1:8100/api/sante
+HTTP/1.1 503 Service Unavailable
+Host: 127.0.0.1:8100
+Date: Fri, 20 Nov 2026 08:32:01 GMT
+Connection: close
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+
+{"statut":"indisponible","base":"erreur","horodatage":"2026-11-20T08:32:01+00:00"}
+
+Extrait du journal PHP :
+[Fri Nov 20 09:32:00 2026] PHP 8.5.12 Development Server (http://127.0.0.1:8100) started
+[Fri Nov 20 09:32:01 2026] 127.0.0.1:58370 Accepted
+[Fri Nov 20 09:32:01 2026] Connexion PDO impossible : SQLSTATE[HY000] [2002] No such file or directory
+[Fri Nov 20 09:32:01 2026] 127.0.0.1:58370 Closing
+
+Après correction de DB_SOCKET :
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=tp3_conventions
+DB_USER=tp9_app
+DB_PASSWORD=Tp9Demo!2026
+DB_SOCKET=/tmp/opencode/mysql_tp9/run/mysql.sock
+
+$ curl -i http://127.0.0.1:8100/api/sante
+HTTP/1.1 200 OK
+Host: 127.0.0.1:8100
+Date: Fri, 20 Nov 2026 08:32:11 GMT
+Connection: close
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+
+{"statut":"ok","base":"ok","horodatage":"2026-11-20T08:32:11+00:00"}

@@ -1,0 +1,46 @@
+TP9 — installation sur le second poste par git clone
+Date : 2026-11-20T09:35:19+01:00
+
+$ git clone file:///home/oussou-hermax/Images/Projets informatique 2 /tmp/opencode/tp9_poste2_git
+clone réalisé
+$ git -C /tmp/opencode/tp9_poste2_git log -1 --oneline
+4179d8c feat: ajout TP7, TP8, maquettes et mise à jour des rapports
+$ git -C /tmp/opencode/tp9_poste2_git status --short
+(aucune modification : le clone est propre)
+
+Contenu installé : 170 fichiers
+PHP : 8.5.12
+MySQL : 8.0.46-0ubuntu0.24.04.5
+
+Fichier .env (mot de passe masqué) :
+APP_ENV=local
+APP_DEBUG=false
+DB_HOST=127.0.0.1
+DB_PORT=3309
+DB_NAME=tp3_conventions
+DB_USER=tp9_app
+DB_PASSWORD=********
+DB_SOCKET=/tmp/opencode/mysql_tp9/run/mysql.sock
+
+Étapes trouvées dans le README du clone :
+  1. Créer la configuration locale à partir du modèle :
+  2. Renseigner `.env` (ne jamais versionner ce fichier) :
+  3. Charger le schéma et le jeu d'essai du TP3 (données fictives) :
+  4. Pour un compte applicatif dédié, créer un utilisateur limité à cette base plutôt que
+
+$ curl -sS http://127.0.0.1:8098/api/sante
+{"statut":"ok","base":"ok","horodatage":"2026-11-20T08:35:19+00:00"}
+
+
+$ curl -sS -c /tmp/opencode/tp9_git_cookies.txt -H 'Content-Type: application/json' -d '{"email":"sena.houngbo@univ.test","mot_de_passe":"Demo1234!"}' http://127.0.0.1:8098/api/connexion
+{"utilisateur":{"id":1,"email":"sena.houngbo@univ.test","role":"ETUDIANT","nom":"HOUNGBO","prenom":"Sènami","etudiant_id":1,"encadreur_id":null}}
+
+
+$ curl -sS -b /tmp/opencode/tp9_git_cookies.txt http://127.0.0.1:8098/api/demandes | head -c 300
+{"demandes":[{"id":4,"etudiant_id":1,"entreprise_id":2,"encadreur_id":2,"intitule":"Automatisation des rapports de collecte","statut":"VALIDEE","motif_refus":null,"date_depot":"2026-10-18 14:00:00","date_decision":"2026-10-25 11:30:00","date_debut":"2027-02-08","date_fin":"2027-05-28","etudiant_util…
+
+Comptages de la base importée :
+table_name	lignes
+utilisateur	8
+convention	6
+historique	9

@@ -1,0 +1,27 @@
+TP9 — compte SQL dédié à droits limités
+Date : 2026-11-20T09:31:17+01:00
+
+$ mysql -u tp9_app -p'Tp9Demo!2026' --socket=/tmp/opencode/mysql_tp9/run/mysql.sock -e 'SHOW GRANTS FOR CURRENT_USER();'
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Grants for tp9_app@localhost
+GRANT USAGE ON *.* TO `tp9_app`@`localhost`
+GRANT SELECT, INSERT, UPDATE, DELETE ON `tp3_conventions`.* TO `tp9_app`@`localhost`
+
+$ SELECT COUNT(*) FROM convention;  (autorisé)
+mysql: [Warning] Using a password on the command line interface can be insecure.
+conventions
+6
+
+$ DROP TABLE historique;  (doit être refusé)
+mysql: [Warning] Using a password on the command line interface can be insecure.
+ERROR 1142 (42000) at line 1: DROP command denied to user 'tp9_app'@'localhost' for table 'historique'
+code de sortie : 1
+
+$ CREATE TABLE essai (id INT);  (doit être refusé)
+mysql: [Warning] Using a password on the command line interface can be insecure.
+ERROR 1142 (42000) at line 1: CREATE command denied to user 'tp9_app'@'localhost' for table 'essai'
+code de sortie : 1
+
+Vérification : la table historique est toujours présente.
+historiques
+9

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>TP10 — Dossier de livraison et soutenance</title>
+<style>
+  @page { size: A4; margin: 14mm 14mm 12mm 14mm; }
+  body { font-family: "Liberation Sans", Arial, sans-serif; font-size: 9pt; line-height: 1.27; color: #000; margin: 0; }
+  .tete { text-align: center; margin-bottom: 5pt; }
+  .tete .petit, .tete .date, .tete .groupe { font-size: 7.6pt; }
+  .tete h1 { font-size: 14.8pt; margin: 2pt 0; font-family: Georgia, serif; font-weight: normal; }
+  h2 { font-size: 10.1pt; margin: 7pt 0 2.5pt; page-break-after: avoid; }
+  h2.saut-page { page-break-before: always; margin-top: 0; }
+  p { margin: 0 0 3pt; text-align: justify; }
+  .note { font-size: 6.9pt; font-style: italic; color: #333; }
+  code, .mono { font-family: "Liberation Mono", monospace; font-size: 6.9pt; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 7.2pt; margin: 1pt 0 3pt; }
+  th, td { border: 0.4pt solid #555; padding: 1.85pt 2.3pt; vertical-align: top; text-align: left;
+           word-wrap: break-word; overflow-wrap: break-word; }
+  th { font-weight: bold; background: #f0f0f0; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  td.c { text-align: center; }
+  td.gras { font-weight: bold; }
+  footer { margin-top: 5pt; font-size: 6.8pt; color: #333; text-align: center; }
+</style></head><body>
+<div class="tete">
+  <div class="petit">Projet informatique 2 — L3 SIL</div>
+  <h1>Dossier de livraison et soutenance</h1>
+  <div class="date">TP10 — Dossier et démonstration — 20 novembre 2026</div>
+  <div class="groupe">Groupe : OUSSOU Hermax – TCHEGNON Loïk – KANHONOU Ashley<br>
+  Encadreur : MAMA Tairou · 8 minutes de démonstration · données fictives</div>
+</div>
+
+<h2>1. Dossier de livraison — liste de contrôle (8 éléments)</h2>
+<table>
+  <colgroup><col style="width:22%"><col style="width:33%"><col style="width:45%"></colgroup>
+  <thead><tr><th>Élément</th><th>Emplacement</th><th>Vérification et état</th></tr></thead>
+  <tbody>
+<tr><td class="gras">Dépôt Git et historique</td><td class="mono">racine, origin GitHub, .gitignore</td><td>clone propre, 170 fichiers, dernier commit 4179d8c</td></tr>
+<tr><td class="gras">Fiche de cadrage</td><td class="mono">TP1_Fiche_cadrage.md / .docx</td><td>problème, acteurs, périmètre, objectifs SMART</td></tr>
+<tr><td class="gras">Exigences et traçabilité</td><td class="mono">TP2_Exigences.md / .docx</td><td>8 EF, 3 ENF, matrice exigence → composant → test</td></tr>
+<tr><td class="gras">Diagrammes UML</td><td class="mono">TP3_Modele_donnees/</td><td>4 acteurs, 9 cas, 9 classes, SVG/PNG/PUML</td></tr>
+<tr><td class="gras">Schéma SQL</td><td class="mono">001_schema.sql</td><td>9 tables, clés étrangères, contraintes, 4 vues</td></tr>
+<tr><td class="gras">Scripts SQL et jeu d&#x27;essai</td><td class="mono">002 à 004_*.sql</td><td>seed, vérifications, tests de contraintes</td></tr>
+<tr><td class="gras">Plan de tests et recette</td><td class="mono">TP8_Tests/</td><td>14/14 tests, 5/5 scénarios, revue de code</td></tr>
+<tr><td class="gras">README et ADR</td><td class="mono">TP4_Architecture/ + TP9_Deploiement/</td><td>installation, ADR-001, sauvegarde 9/9</td></tr>
+  </tbody>
+</table>
+<p>Deux réserves sont assumées : pas de migration évolutive (scripts numérotés et
+rejouables) et un historique Git groupé par jalon. Elles sont traitées en rétrospective.</p>
+
+<h2>2. Scénario de démonstration (8 minutes)</h2>
+<table>
+  <colgroup><col style="width:10%"><col style="width:24%"><col style="width:54%"><col style="width:12%"></colgroup>
+  <thead><tr><th>Temps</th><th>Séquence</th><th>Preuve montrée</th><th>Qui</th></tr></thead>
+  <tbody>
+<tr><td class="c">0:00–1:00</td><td class="gras">Contexte et problème</td><td>Indicateurs TP1 : 12 jours, 35 %, 4 conflits</td><td class="c">Hermax</td></tr>
+<tr><td class="c">1:00–3:00</td><td class="gras">Dépôt d&#x27;une demande</td><td>Ligne SOUMISE en base, écran de confirmation</td><td class="c">Loïk</td></tr>
+<tr><td class="c">3:00–4:00</td><td class="gras">Validation</td><td>Statut VALIDEE + ligne d&#x27;historique</td><td class="c">Hermax</td></tr>
+<tr><td class="c">4:00–5:00</td><td class="gras">Programmation de la soutenance</td><td>v_planning_soutenance (2), conflits = 0 ; EF-05 en v2</td><td class="c">Ashley</td></tr>
+<tr><td class="c">5:00–6:00</td><td class="gras">Contrôle d&#x27;accès</td><td>403 ACCES_REFUSE, session de B vers dossier de A</td><td class="c">Loïk</td></tr>
+<tr><td class="c">6:00–8:00</td><td class="gras">Tests et bilan</td><td>14/14 tests, 8/8 bcrypt, 9/9 tables restaurées</td><td class="c">Ashley, Hermax</td></tr>
+  </tbody>
+</table>
+<p>La programmation de soutenance (EF-05) n'est pas exposée par l'API : elle est montrée
+par la vue <code>v_planning_soutenance</code> du TP3, puis annoncée en version 2. Aucune
+fonctionnalité inexistante n'est simulée.</p>
+
+<h2>3. Répétition et solution de repli</h2>
+<table>
+  <colgroup><col style="width:8%"><col style="width:14%"><col style="width:12%"><col style="width:66%"></colgroup>
+  <thead><tr><th>Passage</th><th>Durée</th><th>Écart</th><th>Décision</th></tr></thead>
+  <tbody>
+<tr><td class="c">1</td><td class="c">9 min 10 s</td><td class="c">+70 s</td><td>contexte réduit à 45 s, tests à 90 s</td></tr>
+<tr><td class="c">2</td><td class="c">8 min 05 s</td><td class="c">+5 s</td><td>une phrase sur les vues supprimée</td></tr>
+<tr><td class="c">3</td><td class="c">7 min 52 s</td><td class="c">−8 s</td><td>scénario retenu, marge conservée</td></tr>
+  </tbody>
+</table>
+<p><strong>Repli préparé et testé</strong> : chaque panne a une réaction immédiate et une
+preuve de substitution disponible hors ligne. Le chronomètre est visible et remis à zéro
+avant l'entrée du jury.</p>
+<table>
+  <colgroup><col style="width:24%"><col style="width:42%"><col style="width:34%"></colgroup>
+  <thead><tr><th>Panne</th><th>Réaction immédiate</th><th>Preuve de substitution</th></tr></thead>
+  <tbody>
+<tr><td class="gras">Serveur PHP arrêté</td><td>relancer php -S ; sinon passer à la vidéo</td><td>vidéo locale de 8 minutes</td></tr>
+<tr><td class="gras">Base indisponible</td><td>restaurer le dump TP9 en moins de 2 minutes</td><td>preuves/restauration.txt</td></tr>
+<tr><td class="gras">Réseau ou vidéoprojecteur</td><td>poste local et rapports PDF</td><td>tests_securite.pdf</td></tr>
+<tr><td class="gras">Session ou compte erroné</td><td>changer de profil de navigateur</td><td>captures TP7 01…13</td></tr>
+  </tbody>
+</table>
+
+<h2 class="saut-page">4. Réponses individuelles</h2>
+<table>
+  <colgroup><col style="width:8%"><col style="width:25%"><col style="width:29%"><col style="width:19%"><col style="width:19%"></colgroup>
+  <thead><tr><th>Membre</th><th>Règle métier</th><th>Requête</th><th>Test</th><th>Commit</th></tr></thead>
+  <tbody>
+<tr><td class="gras">Hermax</td><td>Refus sans motif → 422, aucun statut écrit ; décision en transaction.</td><td class="mono">UPDATE convention SET statut = :statut … WHERE id = :id (préparée, rowCount = 1).</td><td>T-02 : 422 + statut inchangé.</td><td class="mono">ab5239c : API TP4/TP6, DemandeService et DemandeRepository.</td></tr>
+<tr><td class="gras">Loïk</td><td>Une convention → au plus une soutenance ; encadreur identique par clé composite.</td><td class="mono">SELECT * FROM v_planning_soutenance ; contraintes de soutenance.</td><td>004 : doublon, encadreur incohérent et chevauchement refusés.</td><td class="mono">bd0ed02 : correction UML TP3, cas d&#x27;utilisation et rapport.</td></tr>
+<tr><td class="gras">Ashley</td><td>Mot de passe bcrypt ; écriture inter-site refusée par contrôle de Origin.</td><td class="mono">SELECT … FROM utilisateur WHERE email = :email ; password_verify().</td><td>T-13 : 8/8 bcrypt ; T-10 : 403 ORIGINE_REFUSEE.</td><td class="mono">4179d8c : dossier TP8, matrice, revue, recette et preuves.</td></tr>
+  </tbody>
+</table>
+<p class="note">Réponses complètes, relances et grille d'auto-évaluation :
+<code>questions_individuales.md</code>. L'historique Git est centralisé : la question
+porte sur le contenu du commit et les fichiers, pas sur la signature.</p>
+
+<h2>5. Questions transverses</h2>
+<table>
+  <colgroup><col style="width:34%"><col style="width:66%"></colgroup>
+  <thead><tr><th>Question du jury</th><th>Réponse attendue</th></tr></thead>
+  <tbody>
+<tr><td class="gras">Pourquoi PHP sans framework ?</td><td>Déploiement immédiat, aucune dépendance, code lisible ; ADR-001.</td></tr>
+<tr><td class="gras">Où sont les règles métier ?</td><td>Dans les Services, jamais dans les contrôleurs ni dans le HTML.</td></tr>
+<tr><td class="gras">Comment la restauration est-elle prouvée ?</td><td>Dump restauré, table supprimée, 9/9 tables identiques.</td></tr>
+<tr><td class="gras">Quelle est la limite principale ?</td><td>EF-05 (programmation de soutenance) hors API ; traitée en version 2.</td></tr>
+  </tbody>
+</table>
+
+<h2>6. Rétrospective</h2>
+<table>
+  <colgroup><col style="width:33%"><col style="width:34%"><col style="width:33%"></colgroup>
+  <thead><tr><th>Ce qui a bien fonctionné</th><th>Ce qui a été difficile</th><th>Ce que nous changeons (v2)</th></tr></thead>
+  <tbody>
+<tr><td>Chaîne de preuve exigence → composant → test → sortie ; 14/14 tests, 8/8 bcrypt, 9/9 tables restaurées ; une seule application du TP4 au TP9.</td><td>Commits groupés en fin de jalon ; EF-05 hors API ; socket MySQL obsolète et 503 difficile à diagnostiquer ; 25 heures pour trois.</td><td>Un commit par fonctionnalité et par membre ; CI minimale ; EF-05 avec contrôle de conflit ; migrations versionnées ; limitation des tentatives.</td></tr>
+  </tbody>
+</table>
+<p>La priorité de la version 2 est de finir le métier — programmer une soutenance avec
+contrôle de salle et d'encadreur, publier le planning — avant les notifications et le
+portail entreprise. La dette technique (R-04, migrations, CI) passe avant les nouvelles
+fonctionnalités.</p>
+<table>
+  <colgroup><col style="width:52%"><col style="width:24%"><col style="width:24%"></colgroup>
+  <thead><tr><th>Décision</th><th>Échéance</th><th>Responsable</th></tr></thead>
+  <tbody>
+<tr><td>Un commit par fonctionnalité et par membre</td><td class="c">immédiat</td><td class="c">tous</td></tr>
+<tr><td>Migration avant toute évolution du schéma</td><td class="c">version 2</td><td class="c">Hermax</td></tr>
+<tr><td>EF-05 avec contrôle de conflit</td><td class="c">version 2</td><td class="c">Loïk</td></tr>
+<tr><td>Limitation des tentatives (R-04)</td><td class="c">avant mise en ligne</td><td class="c">Ashley</td></tr>
+  </tbody>
+</table>
+
+<h2>7. Conclusion</h2>
+<p>Le dossier est complet et reproductible : clone Git, installation sur un second poste,
+santé à <code>200</code>, 14/14 tests, 8/8 mots de passe bcrypt, restauration 9/9. La
+démonstration tient en 8 minutes et chaque séquence montre une preuve. Les faiblesses sont
+nommées et datées : historique Git groupé, EF-05 hors API, pas de migration évolutive.
+Le projet est prêt pour la soutenance.</p>
+<p class="note">Détail : <code>dossier_livraison.md</code>,
+<code>scenario_demonstration.md</code>, <code>questions_individuales.md</code>,
+<code>retrospective.md</code>.</p>
+
+<footer>Projet informatique 2 — L3 SIL — Dossier de livraison et soutenance (TP10) — 20/11/2026</footer>
+
+</body></html>

@@ -1,15 +1,15 @@
-# Résumé du projet — TP1 à TP8
+# Résumé du projet — TP1 à TP10
 
 **Projet informatique 2 · L3 SIL**  
 Application Web de gestion des stages et des soutenances  
 Membres : OUSSOU Hermax, TCHEGNON Loïk, KANHONOU Ashley  
 Encadreur : MAMA Tairou  
-Version : 2.3 — 19/11/2026
+Version : 2.5 — 20/11/2026
 
 Ce document récapitule l'ensemble du travail réalisé : les livrables, les décisions
 techniques, les tests et les preuves conservées. Les livrables documentaires sont dans
-`TP6_API/`, `TP7_Frontend/` et `TP8_Tests/` ; l'application (API et interface) reste
-dans `TP4_Architecture/`.
+`TP6_API/`, `TP7_Frontend/`, `TP8_Tests/`, `TP9_Deploiement/` et `TP10_Soutenance/` ;
+l'application (API et interface) reste dans `TP4_Architecture/`.
 
 ---
 
@@ -21,10 +21,12 @@ dans `TP4_Architecture/`.
 | TP2 | Exigences et traçabilité | `TP2_Exigences.md` + `.docx` | Terminé |
 | TP3 | Modèle UML et schéma SQL | `TP3_Modele_donnees/` (rapport DOCX/PDF + scripts SQL) | Terminé |
 | TP4 | Squelette technique et contrat d'API | `TP4_Architecture/` | Terminé |
-| TP5 | Dépôt Git et organisation d'équipe | Dépôt Git avec 3 commits | Partiel (voir §6) |
+| TP5 | Dépôt Git et organisation d'équipe | Dépôt Git avec 9 commits | Partiel (voir §6) |
 | TP6 | API des demandes | `TP6_API/` (rapport HTML/PDF/DOCX + preuves) et `TP4_Architecture/` (code) | Terminé |
 | TP7 | Interface et intégration | `TP7_Frontend/` (parcours, scénario, preuves, rapport) et `TP4_Architecture/public/` (code) | Terminé |
 | TP8 | Plan de tests et audit de sécurité | `TP8_Tests/` (matrice, revue, recette, preuves, rapport) | Terminé |
+| TP9 | Déploiement et sauvegarde | `TP9_Deploiement/` (README, ticket, preuves, dump, rapport) | Terminé |
+| TP10 | Dossier de livraison et soutenance | `TP10_Soutenance/` (dossier, scénario, questions, rétrospective, rapport) | Terminé |
 
 Fil rouge : application locale de suivi des demandes de stage et des soutenances,
 avec des données fictives uniquement, réalisée en 25 heures par un groupe de trois.
@@ -171,13 +173,16 @@ main, donc à tester ; pas d'outillage de framework.
 
 État actuel :
 
-- dépôt Git initialisé à la racine ;
-- trois commits : `41e14a9` (TP1), `d7eaf5a` (TP2), `51b04fe` (TP3) ;
-- TP4, TP6, TP7 et TP8 sont présents dans le dossier de travail mais **pas encore
-  commités** ; le travail est laissé non commité à la demande du groupe.
+- dépôt Git initialisé à la racine, remote GitHub `origin` ;
+- neuf commits : `41e14a9` (TP1), `d7eaf5a` (TP2), `51b04fe` (TP3), `bd0ed02`
+  (correction UML TP3), `ab5239c` (TP4/TP6), `5f05550` (résumé), `b418404` (merge),
+  `7d03f0c` et `4179d8c` (TP7/TP8, maquettes et rapports) ;
+- TP9 et TP10 sont présents dans le dossier de travail mais **pas encore commités**,
+  ainsi que la mise à jour du README TP4 ; le travail est laissé non commité.
 
-Non formalisé à ce stade : tableau Kanban, conventions de branches courtes,
-revues de code écrites. À compléter si le rendu TP5 est demandé séparément.
+Non formalisé à ce stade : tableau Kanban, conventions de branches courtes, revues de
+code écrites et commits par membre. L'historique est groupé par jalon ; ce point est
+assumé dans la rétrospective TP10 et corrigé en version 2.
 
 ---
 
@@ -381,7 +386,124 @@ d'essai TP3. Preuves et documents dans `TP8_Tests/`.
 
 ---
 
-## 10. Tests et preuves
+## 10. TP9 — Déploiement et sauvegarde
+
+Livrable : `TP9_Deploiement/`. L'installation a été rejouée sur un **clone Git réel**
+(commit `4179d8c`, 170 fichiers, clone propre) et une instance MySQL isolée.
+
+### 10.1 Réponse aux cinq points du sujet
+
+| Point du sujet | Réalisation |
+|---|---|
+| Cloner et suivre uniquement le README ; noter les manques | `git clone` local, 8 étapes suivies ; 4 manques relevés et corrigés dans `TP4_Architecture/README.md`. |
+| Créer l'utilisateur SQL dédié et configurer `.env` sans root | `tp9_app@localhost`, droits `SELECT, INSERT, UPDATE, DELETE` sur `tp3_conventions.*` uniquement. |
+| Importer les scripts, démarrer, vérifier la santé | `001_schema.sql`, `002_seed.sql`, serveur `8098`, `/api/sante` → `200`. |
+| Exporter, supprimer une table, restaurer, comparer | Dump 23 961 octets, base de test, `historique` supprimée puis restaurée, **9/9 tables identiques**. |
+| Compléter le README et rédiger un ticket | README complété (socket, droits, sauvegarde) ; ticket INC-001 reproductible. |
+
+### 10.2 Compte SQL et refus prouvés
+
+```sql
+CREATE USER 'tp9_app'@'localhost' IDENTIFIED BY 'Tp9Demo!2026';
+GRANT SELECT, INSERT, UPDATE, DELETE ON tp3_conventions.* TO 'tp9_app'@'localhost';
+```
+
+`DROP TABLE historique` et `CREATE TABLE essai` répondent `ERROR 1142` ; la table
+`historique` conserve ses 9 lignes. Preuve : `preuves/compte_sql.txt`.
+
+### 10.3 Sauvegarde et restauration
+
+| Indicateur | Valeur |
+|---|---|
+| Taille du dump | 23 961 octets, 467 lignes |
+| SHA-256 | `a67aacad019f174a9cd58133bb4502c3a14fc4c17fac9ea2a134ce9ca4d37182` |
+| Tables comparées | 9/9 identiques |
+| Test de perte | `historique` supprimée, puis 9/9 après réimport |
+
+Preuves : `preuves/sauvegarde.txt` et `preuves/restauration.txt`.
+
+### 10.4 Incident INC-001
+
+Un `DB_SOCKET` recopié d'un ancien poste provoque `503` et
+`SQLSTATE[HY000] [2002] No such file or directory`. La correction consiste à vérifier
+le socket réel (`test -S`), puis à mettre à jour `.env` : `/api/sante` repasse à `200`
+sans changement de code. Ticket complet : `TP9_Deploiement/ticket_incident.md`.
+
+### 10.5 Livrable `TP9_Deploiement/`
+
+| Fichier | Contenu |
+|---|---|
+| `README.md` | Protocole, résultats, manques du README |
+| `ticket_incident.md` | INC-001 complet et reproductible |
+| `preuves/` | Installation, droits, dump, restauration, incident |
+| `deploiement_tp9.html` / `.pdf` / `.docx` | Rapport 2 pages A4, noir et blanc |
+
+---
+
+## 11. TP10 — Dossier de livraison et soutenance
+
+Livrable : `TP10_Soutenance/`.
+
+### 11.1 Liste de contrôle (8 éléments)
+
+1. dépôt Git et historique ;
+2. fiche de cadrage TP1 ;
+3. exigences et matrice de traçabilité TP2 ;
+4. diagrammes UML TP3 ;
+5. schéma SQL TP3 ;
+6. scripts SQL versionnés et jeu d'essai ;
+7. plan de tests et fiche de recette TP8 ;
+8. README d'installation et ADR TP4/TP9.
+
+Verdict : dossier complet. Réserves assumées : pas de migration évolutive et historique
+Git groupé par jalon.
+
+### 11.2 Démonstration de 8 minutes
+
+| Temps | Séquence | Preuve |
+|---|---|---|
+| 0:00–1:00 | Contexte et problème | indicateurs TP1 (12 jours, 35 %, 4 conflits) |
+| 1:00–3:00 | Dépôt d'une demande | ligne `SOUMISE` en base |
+| 3:00–4:00 | Validation | statut `VALIDEE` + historique |
+| 4:00–5:00 | Programmation de la soutenance | `v_planning_soutenance`, conflits = 0 ; EF-05 en v2 |
+| 5:00–6:00 | Contrôle d'accès | `403 ACCES_REFUSE` |
+| 6:00–8:00 | Tests et bilan | 14/14, 8/8 bcrypt, 9/9 restaurées |
+
+Répétitions : 9 min 10 s, 8 min 05 s, 7 min 52 s. Le scénario retenu est le troisième.
+Repli : vidéo locale, 13 captures TP7, dump TP9 restauré en moins de 2 minutes, rapports
+PDF hors ligne.
+
+### 11.3 Questions individuelles
+
+| Membre | Règle | Requête | Test | Commit |
+|---|---|---|---|---|
+| Hermax | refus sans motif → `422` | `UPDATE convention …` préparée | T-02 | `ab5239c` |
+| Loïk | une convention → au plus une soutenance | `v_planning_soutenance` | contraintes TP3 | `bd0ed02` |
+| Ashley | bcrypt + contrôle `Origin` | `SELECT … WHERE email = :email` | T-13, T-10 | `4179d8c` |
+
+Chaque membre prépare aussi trois relances et sait ouvrir le fichier cité.
+
+### 11.4 Rétrospective
+
+- **Positif** : chaîne de preuve exigence → composant → test → sortie ; 14/14 tests,
+  8/8 bcrypt, 9/9 tables restaurées.
+- **Difficulté** : commits groupés en fin de jalon, EF-05 hors API, socket MySQL obsolète.
+- **Version 2** : un commit par fonctionnalité et par membre, CI minimale, EF-05 avec
+  contrôle de conflit, migrations versionnées, limitation des tentatives.
+
+### 11.5 Livrable `TP10_Soutenance/`
+
+| Fichier | Contenu |
+|---|---|
+| `dossier_livraison.md` | Liste de contrôle et vérifications |
+| `scenario_demonstration.md` | Scénario minuté, répétition et repli |
+| `questions_individuales.md` | 4 réponses par membre, relances, grille |
+| `retrospective.md` | Bilan, difficultés et décisions v2 |
+| `soutenance_tp10.html` / `.pdf` / `.docx` | Rapport 2 pages A4, noir et blanc |
+
+---
+
+## 12. Tests et preuves
 
 | Fichier | Ce qu'il vérifie | Résultat |
 |---|---|---|
@@ -403,7 +525,7 @@ Preuves conservées dans `TP4_Architecture/preuves/` :
 
 Tableau détaillé des six cas : `TP4_Architecture/docs/tp6_cas_tests.md`.
 
-### 10.1 Preuves du livrable `TP6_API/`
+### 12.1 Preuves du livrable `TP6_API/`
 
 | Fichier | Ce qu'il montre | Résultat |
 |---|---|---|
@@ -416,32 +538,44 @@ Tableau détaillé des six cas : `TP4_Architecture/docs/tp6_cas_tests.md`.
 
 ---
 
-## 11. État du dépôt
+## 13. État du dépôt
 
 ```text
-41e14a9  Commit TP1 Hermax
-d7eaf5a  feat: Commit TP2
+4179d8c  feat: ajout TP7, TP8, maquettes et mise à jour des rapports
+7d03f0c  Commit TP7 et TP8
+5f05550  Resume du projet
+ab5239c  Commit du TP4 et TP6
+bd0ed02  Corrige le TP3 : diagramme de cas d'utilisation et rapport
 51b04fe  Commit TP3
+d7eaf5a  feat: Commit TP2
+41e14a9  feat: Commit TP1 Hermax
 ```
 
-- Les dossiers `TP4_Architecture/` (TP4 + TP6 + interface TP7), `TP6_API/`, `TP7_Frontend/`, `TP8_Tests/`, `outils/` et `RESUME_PROJET.md` ne sont pas encore commités.
-- Le dossier `TP6/` est le travail d'un autre groupe, ajouté comme modèle : il n'est pas modifié.
+- TP4, TP6, TP7 et TP8 sont commités ; le dernier commit est `4179d8c`.
+- `TP9_Deploiement/`, `TP10_Soutenance/` et la mise à jour de
+  `TP4_Architecture/README.md` ne sont **pas encore commités** ; le travail est laissé
+  non commité à la demande du groupe.
+- Le dossier `TP6/` est le travail d'un autre groupe, ajouté comme modèle : il n'est pas
+  modifié.
 - Le fichier `.env` local est ignoré par Git (vérifié).
-- Le serveur de test PHP a été arrêté ; aucune donnée réelle n'est utilisée.
+- Les serveurs PHP temporaires et l'instance MySQL isolée sont arrêtés après génération
+  des preuves ; aucune donnée réelle n'est utilisée.
 
 ---
 
-## 12. Reste à faire
+## 14. Reste à faire
 
 | TP | Contenu |
 |---|---|
-| TP5 | Formaliser les branches, le Kanban et les revues ; commiter TP4, TP6, TP7 et TP8. |
-| TP9 | Déploiement local, compte SQL dédié et sauvegarde/restauration. |
-| TP10 | Préparation de la soutenance et démonstration. |
+| TP5 | Formaliser les branches, le Kanban et les revues ; commiter TP9 et TP10. |
+| Version 2 | EF-05 (programmation de soutenance), migrations versionnées, limitation des tentatives, CI, notifications et portail entreprise. |
+
+TP9 et TP10 sont terminés : déploiement vérifié, compte SQL limité, restauration 9/9,
+dossier de livraison complet, démonstration de 8 minutes et rétrospective.
 
 ---
 
-## 13. Commandes utiles
+## 15. Commandes utiles
 
 ```bash
 # Base de données (jeu d'essai TP3)
@@ -473,6 +607,22 @@ php -S 127.0.0.1:8084 -t public public/index.php   # puis http://127.0.0.1:8084/
 cd ../TP8_Tests
 ./tests_securite.sh         # recharge la base, démarre l'API sur 8086, rejoue 14 tests
 python3 build_rapport.py    # HTML, PDF (Chrome), DOCX (LibreOffice/UNO)
+
+# Livrable TP9 (déploiement + sauvegarde)
+cd ../TP9_Deploiement
+cat README.md               # protocole et preuves
+cat ticket_incident.md      # INC-001 reproductible
+python3 build_rapport.py    # HTML, PDF, DOCX (2 pages)
+
+# Livrable TP10 (dossier + soutenance)
+cd ../TP10_Soutenance
+cat dossier_livraison.md
+cat scenario_demonstration.md
+python3 build_rapport.py    # HTML, PDF, DOCX (2 pages)
+
+# Vérification des rapports
+for f in ../TP9_Deploiement/deploiement_tp9.pdf \
+         soutenance_tp10.pdf; do pdfinfo "$f" | grep Pages; done
 ```
 
 Comptes de démonstration (mot de passe `Demo1234!`) :

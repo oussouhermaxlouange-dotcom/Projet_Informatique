@@ -1,18 +1,19 @@
-# API et interface de gestion des stages — TP4 à TP8
+# API et interface de gestion des stages — TP4 à TP9
 
 **Projet informatique 2 · L3 SIL**  
 Application Web de gestion des stages et des soutenances  
 Membres : OUSSOU Hermax, TCHEGNON Loïk, KANHONOU Ashley  
-Encadreur : MAMA Tairou — version 2.3 — 19/11/2026
+Encadreur : MAMA Tairou — version 2.4 — 20/11/2026
 
 ## Objectif
 
-Ce dossier contient le socle technique (TP4), l'API des demandes (TP6) et l'interface
-Web (TP7) : arborescence en couches, configuration locale, connexion PDO,
-authentification par session, création et décision d'une demande avec table des
-transitions et transaction, puis écrans étudiante et responsable alimentés en `fetch`.
-Les preuves et rapports des TP6, TP7 et TP8 sont regroupés dans `../TP6_API/`,
-`../TP7_Frontend/` et `../TP8_Tests/`.
+Ce dossier contient le socle technique (TP4), l'API des demandes (TP6), l'interface
+Web (TP7) et la procédure de déploiement (TP9) : arborescence en couches,
+configuration locale, connexion PDO, authentification par session, création et décision
+d'une demande avec table des transitions et transaction, puis écrans étudiante et
+responsable alimentés en `fetch`. Les preuves et rapports des TP6, TP7, TP8 et TP9 sont
+regroupés dans `../TP6_API/`, `../TP7_Frontend/`, `../TP8_Tests/` et
+`../TP9_Deploiement/`.
 
 Le modèle de données est celui du TP3 : base `tp3_conventions`, tables `convention` et
 `historique`.
@@ -31,6 +32,15 @@ php -v
 php -m | grep -E 'PDO|pdo_mysql'
 ```
 
+Si MySQL n'écoute qu'en socket Unix, vérifier d'abord que le fichier existe **sur ce
+poste** ; un socket recopié d'une autre machine provoque un `503` (voir
+`../TP9_Deploiement/ticket_incident.md`) :
+
+```bash
+mysqladmin --socket=/var/run/mysqld/mysqld.sock ping
+test -S /var/run/mysqld/mysqld.sock && echo "socket présent"
+```
+
 ## Installation
 
 1. Créer la configuration locale à partir du modèle :
@@ -47,10 +57,14 @@ DB_PORT=3306
 DB_NAME=tp3_conventions
 DB_USER=tp4_app
 DB_PASSWORD=...
+# Socket Unix optionnel : s'il est renseigné, il remplace host/port.
+DB_SOCKET=
 ```
 
 Sur un poste où MySQL n'écoute qu'en socket Unix, renseigner `DB_SOCKET` et laisser
-`DB_HOST` / `DB_PORT` inchangés : le socket est prioritaire.
+`DB_HOST` / `DB_PORT` inchangés : le socket est prioritaire. Le chemin doit être celui
+du poste courant ; un socket absent provoque
+`SQLSTATE[HY000] [2002] No such file or directory` et un `503` sur `/api/sante`.
 
 3. Charger le schéma et le jeu d'essai du TP3 (données fictives) :
 
@@ -62,7 +76,7 @@ mysql -u root -p < ../TP3_Modele_donnees/002_seed.sql
 Comptes de démonstration (mot de passe commun `Demo1234!`) :
 
 | Rôle | E-mail |
-|---|---|
+|---|---|  
 | Étudiant | `sena.houngbo@univ.test` |
 | Encadreur | `sylvain.kiki@univ.test` |
 | Responsable | `responsable.pedago@univ.test` |
@@ -79,8 +93,26 @@ FLUSH PRIVILEGES;
 SQL
 ```
 
-Aucun privilège `DROP`, `ALTER` ni `GRANT` n'est accordé : le compte applicatif ne peut
-que lire et modifier les données, pas changer le schéma.
+Aucun privilège `DROP`, `CREATE`, `ALTER` ni `GRANT` n'est accordé : le compte applicatif
+ne peut que lire et modifier les données, pas changer le schéma. Contrôle :
+
+```bash
+mysql -u tp4_app -p -e 'SHOW GRANTS FOR CURRENT_USER();'
+mysql -u tp4_app -p -e 'DROP TABLE tp3_conventions.historique;'   # doit échouer en 1142
+```
+
+Le TP9 a utilisé le même principe avec le compte `tp9_app` : voir
+`../TP9_Deploiement/preuves/compte_sql.txt`.
+
+5. Démarrer le serveur, puis contrôler la santé et la connexion :
+
+```bash
+php -S 127.0.0.1:8000 -t public public/index.php
+curl -i http://127.0.0.1:8000/api/sante
+```
+
+Un `503` signifie que la base n'est pas joignable : lire le journal PHP, puis vérifier
+`.env`, le socket et les droits du compte **avant** de modifier le code.
 
 Pour remplacer un mot de passe de démonstration, générer une empreinte bcrypt :
 
@@ -111,6 +143,39 @@ Réponse de santé attendue lorsque la base est joignable :
 
 Avec Apache, le `DocumentRoot` doit pointer sur `public/` ; le fichier `.htaccess`
 réécrit toutes les requêtes vers `index.php`.
+
+## Sauvegarde et restauration
+
+Sauvegarde cohérente, sans bloquer les écritures, avec les routines et déclencheurs :
+
+```bash
+mysqldump -u root -p --single-transaction --routines --triggers \
+          tp3_conventions > tp3_conventions_$(date +%F).sql
+sha256sum tp3_conventions_$(date +%F).sql
+```
+
+La restauration se **teste toujours sur une base dédiée**, jamais directement sur la
+base de production :
+
+```bash
+mysql -u root -p -e "CREATE DATABASE tp3_conventions_restauration \
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p tp3_conventions_restauration < tp3_conventions_2026-11-20.sql
+```
+
+Puis comparer les comptages des deux bases :
+
+```sql
+SELECT 'utilisateur' AS table_name, COUNT(*) FROM tp3_conventions.utilisateur
+UNION ALL SELECT 'convention', COUNT(*) FROM tp3_conventions.convention
+UNION ALL SELECT 'historique', COUNT(*) FROM tp3_conventions.historique;
+```
+
+Une sauvegarde n'est fiable qu'après une restauration réussie et des `COUNT(*)`
+identiques. Résultat du TP9 : **9/9 tables identiques** (preuve :
+`../TP9_Deploiement/preuves/restauration.txt`). Le test de reprise complet, y compris la
+suppression volontaire d'une table, est décrit dans
+`../TP9_Deploiement/README.md`.
 
 ## Routes
 
@@ -285,7 +350,17 @@ TP4_Architecture/
 - [x] Revue de code : 4 remarques classées (`../TP8_Tests/revue_code.md`)
 - [x] Recette : 5 scénarios et procès-verbal (`../TP8_Tests/recette.md`)
 
+## Livrables TP9
+
+- [x] Installation reproductible sur un second poste, en suivant uniquement le README
+- [x] Compte SQL dédié `tp9_app` : `SELECT, INSERT, UPDATE, DELETE` sur `tp3_conventions`
+- [x] Refus vérifiés de `DROP` et `CREATE` (`ERROR 1142`)
+- [x] `/api/sante` à `200` et connexion étudiante fonctionnelle
+- [x] Sauvegarde `mysqldump` : 23 961 octets, SHA-256 consigné
+- [x] Restauration sur base de test : 9/9 tables identiques après suppression d'une table
+- [x] README complété (socket, droits, sauvegarde) et ticket INC-001 reproductible
+
 ## Suite
 
-- TP9 : installation sur un second poste, compte SQL dédié, sauvegarde/restauration.
-- TP10 : préparation de la soutenance et démonstration.
+- TP9 : livré dans `../TP9_Deploiement/` (protocole, preuves, ticket d'incident).
+- TP10 : dossier de livraison et soutenance ; voir `../TP10_Soutenance/`.
